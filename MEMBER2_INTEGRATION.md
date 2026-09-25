@@ -1,93 +1,75 @@
-# RepoMedic — Member 2 branch integration
+# RepoMedic Member 2 — fixed integration handoff
 
-This copy is based **only on the uploaded "Hackathon copy.zip"**. It has not
-been pushed to GitHub and might not include teammate changes made afterward.
+This package is based on the **uploaded Hackathon.zip snapshot**, not a live
+GitHub checkout. It does **not** contain Member 1's completed main backend,
+`/api/investigate`, or `/api/validate`, nor Member 3's React application.
+Do not overwrite teammate-owned files when merging with a newer branch.
 
-## Changes made
+## Changes in the fix package
 
-- `backend/models/schemas.py`: the final approved `InvestigationResponse` model
-  (string `test_generated`, numeric `confidence` in the closed interval [0, 1]).
-- `backend/analyzers/`: a bounded, static Member 2 scanner and analyzers, a
-  README check, deterministic health scoring, and the orchestration engine.
-- `backend/api/analyze.py`: a working read-only `POST /api/analyze` route that
-  reads only a server-chosen local repository and returns the frozen five-field
-  response JSON; does not accept a user-controlled path or URL.
-- `tests/`: independent analyzer/API tests and the approved investigation
-  response contract tests.
-- The uploaded copy of `HACKATHON_EXECUTION_PLAN.md` contained two older
-  investigation responses; both were changed locally to match the team's
-  approved contract. If main already has that update, keep main's version.
-- `README.md`, `SECURITY.MD`, `.gitignore`, `.bobignore`, `.env.example`,
-  teammates' service/frontend files and `sample_repo/` were left unchanged.
+- Fixed relative `REPOMEDIC_SAMPLE_REPO` values to resolve from the project
+  root instead of Uvicorn's current working directory; still accepts only a
+  **server-chosen local repository** and never a client-supplied path or URL.
+- Removed the discarded architecture computation from `/api/analyze`'s engine
+  and exposed the existing architecture summary through
+  `inspect_repository_structure()` and `scripts/inspect_architecture.py`. The
+  frozen analysis API's five-field JSON is unchanged; coordinate new frontend
+  architecture integration with Member 3 rather than silently changing it.
+- Added `backend/preview.py` to serve Member 2's route **without** creating a
+  conflicting `backend/main.py`. Member 1 should register the same router once
+  in the real application.
+- Created a synthetic, intentionally defective `sample_repo/` with an
+  obviously fake demonstration credential marker, a missing-quantity checkout
+  bug, broad exception handling, absent tests, and absent root README.
+  See `documentation/SAMPLE_REPO_DEMO.md` for exact scope and expectations.
+- Replaced the generic root README with RepoMedic-specific setup, security,
+  architecture CLI, and handoff instructions. Kept `SECURITY.MD`,
+  `.gitignore`, `.bobignore`, `.env.example`, and the approved master plan
+  unchanged.
+- Added regression tests covering path resolution when the process CWD is
+  unrelated to the project, the synthetic findings, unchanged API contract,
+  architecture summary, and single router registration.
+- Preserved the **approved** investigation response model: `test_generated`
+  is a nonempty string and `confidence` is a finite float from 0.0 to 1.0.
+  Member 1 owns implementing and registering `/api/investigate`.
 
-## Run locally
-
-From the repository root:
+## Run and verify
 
 ```bash
-python3 -m pip install -r requirements-member2.txt
-python3 -m pytest tests/test_member2_engine.py tests/test_investigation_schema.py -q
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install -r requirements-member2.txt
+python -m pytest -q
+python scripts/inspect_architecture.py sample_repo
+python scripts/benchmark_analysis.py sample_repo
+python -m uvicorn backend.preview:app --host 127.0.0.1 --port 8000
 ```
 
-If Member 1 has not yet created `backend/main.py`, run a temporary local
-preview in a Python shell rather than committing a competing application:
+With Uvicorn running, in a second terminal:
 
 ```bash
-python3 - <<'PY'
-from fastapi import FastAPI
-from backend.api.analyze import router
-app = FastAPI()
-app.include_router(router)
-print([route.path for route in app.routes])
-PY
+curl -X POST http://127.0.0.1:8000/api/analyze
 ```
 
-Member 1 should import and mount the existing Member 2 router **once**:
+## Integrate into the team's app
+
+Inside **Member 1's existing FastAPI app** (not the preview app):
 
 ```python
 from backend.api.analyze import router as analyze_router
 app.include_router(analyze_router)
 ```
 
-The configured repository is `sample_repo/` relative to the project root by
-default; an operator may set `REPOMEDIC_SAMPLE_REPO` to a known safe directory.
-No client-supplied repository path is accepted.
+Check for a prior registration to avoid duplicate routes. Member 3 should
+consume the unchanged five-field `/api/analyze` response. Architecture
+information currently has a CLI report only; agree on an API extension before
+adding frontend UI for it.
 
-## How Member 1 connects the new investigation model
+## Safe branch update
 
-There is **no investigation route** in the uploaded copy, so no replacement
-route was created. Inside their existing `backend/api/investigate.py`, Member 1
-should use:
-
-```python
-from backend.models.schemas import InvestigationResponse
-
-@router.post("/api/investigate", response_model=InvestigationResponse)
-def investigate(...):
-    # Existing investigation service returns a dictionary with exactly the
-    # approved six fields. The route's real parameters/body remain unchanged.
-    ...
-```
-
-If Member 1 has independently added a `schemas.py`, merge the model definition
-into their version rather than replacing teammates' code.
-
-## Safe Git integration (no push performed here)
-
-Inspect changes on `dev-2` and create a review branch before integrating:
-
-```bash
-git switch dev-2
-git pull origin dev-2
-git switch -c review/member2-approved-contract
-# Overlay the code patch or cherry-pick the needed files; inspect git diff.
-python3 -m pytest tests/test_member2_engine.py tests/test_investigation_schema.py -q
-git diff --check
-git status
-```
-
-Do not commit `.env`, actual credentials, live Bob session data, or `.git`
-from the uploaded archive. Keep your team-owned `README.md`, `SECURITY.MD`,
-`.gitignore` and `.bobignore` protection rules intact. Don't represent this
-patch as work performed by IBM Bob; collect authentic Bob work and evidence
-separately to meet the hackathon requirement.
+**Keep your current `.git` folder.** Copy the fix-package contents onto
+`dev-2`, review `git diff` and `git status`, run the full test suite, and
+commit only the intended source changes. Do not copy the ZIP's `.git` (none is
+included), Python virtual environment, caches, real `.env`, live Bob session
+files, or real credentials. This code was produced in ChatGPT and does **not**
+prove that IBM Bob was used; collect authentic Bob evidence separately.
