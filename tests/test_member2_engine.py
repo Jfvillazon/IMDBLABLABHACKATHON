@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+import importlib
 from pathlib import Path
 
 import pytest
@@ -9,7 +10,7 @@ from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
 from backend.analyzers.architecture import summarize_architecture
-from backend.analyzers.engine import analyze_repository
+from backend.analyzers.engine import analyze_repository, inspect_repository_structure
 from backend.analyzers.health import calculate_health_score
 from backend.analyzers.repository import scan_repository
 from backend.api.analyze import router
@@ -120,3 +121,83 @@ def test_missing_repo_returns_generic_error(monkeypatch: pytest.MonkeyPatch, tmp
     response = TestClient(app).post("/api/analyze")
     assert response.status_code == 503
     assert "not-here" not in response.text
+
+
+def test_relative_config_is_relative_to_project_root_not_cwd(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
+) -> None:
+    analyze_module = importlib.import_module("backend.api.analyze")
+    sample = tmp_path / "sample_repo"
+    sample.mkdir()
+    (sample / "app.py").write_text("print('sample')\n", encoding="utf-8")
+    unrelated = tmp_path / "unrelated"
+    unrelated.mkdir()
+    monkeypatch.setattr(analyze_module, "PROJECT_ROOT", tmp_path)
+    monkeypatch.setenv("REPOMEDIC_SAMPLE_REPO", "sample_repo")
+    monkeypatch.chdir(unrelated)
+    response = TestClient(FastAPI(routes=router.routes)).post("/api/analyze")
+    assert response.status_code == 200
+    assert response.json()["files_analyzed"] == 1
+    assert response.json()["repository"] == "sample_repo"
+
+
+def test_default_repo_is_relative_to_project_root(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
+) -> None:
+    analyze_module = importlib.import_module("backend.api.analyze")
+    sample = tmp_path / "sample_repo"
+    sample.mkdir()
+    (sample / "app.py").write_text("pass\n", encoding="utf-8")
+    monkeypatch.setattr(analyze_module, "PROJECT_ROOT", tmp_path)
+    monkeypatch.delenv("REPOMEDIC_SAMPLE_REPO", raising=False)
+    monkeypatch.chdir(tmp_path)
+    assert TestClient(FastAPI(routes=router.routes)).post("/api/analyze").status_code == 200
+
+
+def test_architecture_inspection_keeps_analysis_contract_unchanged(tmp_path: Path) -> None:
+    (tmp_path / "src").mkdir()
+    (tmp_path / "src" / "main.py").write_text("pass\n", encoding="utf-8")
+    structure = inspect_repository_structure(tmp_path)
+    assert structure == {
+        "repository": tmp_path.name,
+        "top_level_directories": ["src"],
+        "entry_points": ["src/main.py"],
+    }
+    assert set(analyze_repository(tmp_path)) == {
+        "repository", "files_analyzed", "languages", "health_score", "findings",
+    }
+
+
+def test_controlled_demo_contains_expected_static_findings() -> None:
+    project_root = Path(__file__).resolve().parents[1]
+    sample = project_root / "sample_repo"
+    result = analyze_repository(sample)
+    assert result["files_analyzed"] == 3
+    assert result["languages"] == ["JavaScript", "Python"]
+    assert {f["category"] for f in result["findings"]} >= {
+        "security", "testing", "error_handling", "documentation",
+    }
+    assert "FAKE_DEMO_KEY_NOT_REAL" not in json.dumps(result)
+    structure = inspect_repository_structure(sample)
+    assert structure["entry_points"] == ["app.py"]
+    assert structure["top_level_directories"] == ["frontend"]
+
+
+def test_member2_preview_has_exactly_one_analyze_route(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
+) -> None:
+    monkeypatch.setenv("REPOMEDIC_SAMPLE_REPO", str(tmp_path))
+
+    from backend.preview import app
+    from backend.api.analyze import router as analyze_router
+
+    paths = [
+        route.path
+        for route in analyze_router.routes
+        if hasattr(route, "path")
+    ]
+
+    assert paths.count("/api/analyze") == 1
+
+    response = TestClient(app).post("/api/analyze")
+    assert response.status_code == 200, response.text

@@ -1,68 +1,113 @@
-# IBM Hackathon GitHub Project Template
+# RepoMedic — IBM Bob Hackathon
 
-This GitHub project template is for IBM Hackathon projects. It includes pre-configured security files to help prevent accidental credential commits and potential account suspension during the hackathon.
+RepoMedic is a developer-workflow prototype with two coordinated parts:
+repository diagnosis and bug investigation. This branch contains **Member 2's
+static, deterministic repository-analysis engine**, its tests, and a controlled
+synthetic demonstration repository. IBM Bob can be used separately for the
+team's agentic investigation workflow; the analyzer does not call Bob, require
+an IBM API key, execute scanned source files, or consume Bobcoins.
 
-## 🚀 Quick Start
+> **Branch integration:** This project snapshot does not include Member 1's
+> completed main backend or investigation/validation endpoints, or Member 3's
+> React application. The Member 2 preview below is an independent integration
+> check, not a substitute for their work.
 
-1. **Use this template to create your project:**
-   - Click "Use this template" button above and select "Create a new repository"
-   - Name your repository
-   - Click "Create repository"
+## Run Member 2 locally
 
-2. **Clone your new repository:**
+Use Python 3.11 or newer. From the project root:
 
-   ```bash
-   git clone https://github.com/HACKATHON-ORG/your-repo-name.git
-   cd your-repo-name
-   ```
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install -r requirements-member2.txt
+python -m pytest -q
+```
 
-3. **Set up environment variables:**
+The tracked `sample_repo/` is a **deliberately broken, synthetic checkout
+project**. It contains no real credentials and should never be deployed. Its
+known findings and intentional checkout bug are documented in
+[`documentation/SAMPLE_REPO_DEMO.md`](documentation/SAMPLE_REPO_DEMO.md).
 
-   ```bash
-   # Copy the example file
-   cp .env.example .env
+Start a local API preview using the real Member 2 router:
 
-   # Edit .env with your actual credentials
-   # Use your preferred editor (nano, vim, code, etc.)
-   nano .env
-   ```
+```bash
+python -m uvicorn backend.preview:app --host 127.0.0.1 --port 8000
+```
 
-4. **Verify .gitignore is working:**
+Then from a second terminal:
 
-   ```bash
-   # This should NOT show .env file
-   git status
+```bash
+curl -X POST http://127.0.0.1:8000/api/analyze
+```
 
-   # This should confirm .env is ignored
-   git check-ignore -v .env
-   ```
+The response uses the **approved five-field** `/api/analyze` contract:
+`repository`, `files_analyzed`, `languages`, `health_score`, and `findings`.
+Its scanner reads only a *server-configured local repository*; it never accepts
+arbitrary client-supplied file paths, URLs, or Git repositories. To select a
+different trusted folder, set `REPOMEDIC_SAMPLE_REPO` when starting the
+server. Absolute paths are supported; relative paths are resolved against the
+**project root** regardless of your terminal's current directory.
 
-5. **Start developing!**
+For example:
 
-## 🔒 Security Features
+```bash
+REPOMEDIC_SAMPLE_REPO=sample_repo python -m uvicorn backend.preview:app \
+  --host 127.0.0.1 --port 8000
+```
 
-This template includes:
+Basic architecture information is available separately without changing the
+frontend's approved API shape:
 
-- **`.gitignore`** - Prevents committing credentials and live session files
-- **`.bobignore`** - Prevents AI assistants from logging credentials
-- **`.env.example`** - Template for your environment variables
+```bash
+python scripts/inspect_architecture.py sample_repo
+python scripts/benchmark_analysis.py sample_repo
+```
 
-## 📋 Before Every Commit
+The benchmark measures analyzer runtime only. Collect an actual manual-review
+baseline before claiming any speed improvement. All findings are static
+heuristics, not a complete security audit or a guarantee that the code works.
 
-Always run this checklist:
+## Integrating with the team's backend and frontend
 
-- [ ] Reviewed `git diff` for sensitive data
-- [ ] No hardcoded API keys or passwords
-- [ ] `.env` file is NOT in staged changes
-- [ ] No files with "credential" or "secret" in name
-- [ ] Used environment variables for all credentials
+Member 1 should mount Member 2's router **exactly once** in the real FastAPI
+application:
 
-## 🆘 Need Help?
+```python
+from backend.api.analyze import router as analyze_router
+app.include_router(analyze_router)
+```
 
-- Read [SECURITY.md](SECURITY.MD) for detailed guidelines
-- Contact hackathon support through mentor channel
-- Ask in the hackathon Slack workspace
+Member 1 retains ownership of `backend/main.py`, `/api/investigate`, and
+`/api/validate`. The approved `InvestigationResponse` is defined in
+`backend/models/schemas.py`: `test_generated` is a **string recommendation**
+and `confidence` is a **finite float between 0.0 and 1.0**. Member 3 should use
+the five-field `/api/analyze` result and coordinate any future architecture
+report integration before altering its contract. Do not mount
+`backend.preview.app` inside the team's application.
 
----
+## Security and safe contribution
 
-**Remember:** Security is everyone's responsibility. When in doubt, ask for help!
+**Read [`SECURITY.MD`](SECURITY.MD) before committing.** The existing
+`.gitignore` and `.bobignore` protections must not be removed or weakened.
+The supplied `.env.example` is only a template; Member 2's local analyzer
+requires no credentials. Other services should use environment variables,
+never hardcoded keys or pasted credentials in AI conversations.
+
+If a teammate needs an `.env` file for another service:
+
+```bash
+cp .env.example .env
+# Edit .env locally. Never commit or share it.
+git check-ignore -v .env
+```
+
+Before every push, inspect `git diff --cached`, avoid committing credentials
+or live Bob-session data, and ensure Python's `.venv/`, `__pycache__/`, and
+`*.pyc` artifacts remain untracked. Only upload approved screenshots and
+redacted session summaries as evidence of **actual** Bob usage. The synthetic
+source is designed to trigger a credential heuristic using an obviously fake
+marker; never replace it with a genuine credential.
+
+See [`MEMBER2_INTEGRATION.md`](MEMBER2_INTEGRATION.md) for branch-specific
+handoff notes and [`documentation/HACKATHON_EXECUTION_PLAN.md`](documentation/HACKATHON_EXECUTION_PLAN.md)
+for the team's execution plan.

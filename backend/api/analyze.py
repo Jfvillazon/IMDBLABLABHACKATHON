@@ -39,11 +39,24 @@ class AnalyzeResponse(BaseModel):
     findings: list[FindingResponse]
 
 
+def configured_repository_root() -> Path:
+    """Resolve the *server-selected* repository independently of the process CWD.
+
+    A relative REPOMEDIC_SAMPLE_REPO is relative to the project root, not to
+    whichever folder the developer happened to launch Uvicorn from. No HTTP
+    request data is ever used to choose a filesystem path.
+    """
+    configured = os.environ.get("REPOMEDIC_SAMPLE_REPO")
+    if not configured:
+        return PROJECT_ROOT / "sample_repo"
+    root = Path(configured).expanduser()
+    return root if root.is_absolute() else PROJECT_ROOT / root
+
+
 @router.post("/api/analyze", response_model=AnalyzeResponse)
 def analyze() -> AnalyzeResponse:
     # Configured by the server operator, NEVER supplied in the HTTP request.
-    repository = os.environ.get("REPOMEDIC_SAMPLE_REPO")
-    root = Path(repository) if repository else PROJECT_ROOT / "sample_repo"
+    root = configured_repository_root()
     try:
         return AnalyzeResponse(**analyze_repository(root))
     except (ValueError, OSError):

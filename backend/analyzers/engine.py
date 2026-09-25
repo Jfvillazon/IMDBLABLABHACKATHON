@@ -31,13 +31,24 @@ def analyze_repository(repo_path: str | Path) -> dict[str, Any]:
     ))
     for index, item in enumerate(findings, 1):
         item["id"] = f"F{index:03d}"
-    # Architecture information remains available for a future report without
-    # silently changing the current frontend's five-field JSON contract.
-    summarize_architecture(root, files)
     return {
         "repository": scan["repository"],
         "files_analyzed": scan["files_analyzed"],
         "languages": scan["languages"],
         "health_score": calculate_health_score(findings),
         "findings": findings,
+    }
+
+
+def inspect_repository_structure(repo_path: str | Path) -> dict[str, Any]:
+    """Expose architecture metadata for reports without changing /api/analyze.
+
+    The frontend's approved analysis contract has exactly five top-level
+    fields. An optional CLI report can use this function now; a future UI
+    integration requires agreement with Member 3.
+    """
+    scan = scan_repository(repo_path)
+    return {
+        "repository": scan["repository"],
+        **summarize_architecture(scan["root"], scan["files"]),
     }
