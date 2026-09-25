@@ -1,49 +1,51 @@
-from fastapi import APIRouter
+"""Read-only FastAPI endpoint using a server-controlled repository root.
+
+Do not accept client-supplied local paths or Git URLs. Those require separate
+sandboxing, authorization, download limits, and SSRF prevention.
+"""
+from __future__ import annotations
+
+import logging
+import os
 from pathlib import Path
+from typing import Literal
 
-from backend.analyzers.repository import scan_repository
-from backend.analyzers.quality import analyze_quality
-from backend.analyzers.testing import analyze_testing
-from backend.analyzers.security import analyze_security
+from fastapi import APIRouter, HTTPException
+from pydantic import BaseModel, Field
+
+from backend.analyzers.engine import analyze_repository
+
+LOGGER = logging.getLogger(__name__)
+router = APIRouter(tags=["analysis"])
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
 
 
-router = APIRouter()
+class FindingResponse(BaseModel):
+    id: str
+    category: str
+    severity: Literal["high", "medium", "low"]
+    title: str
+    file: str
+    line: int | None
+    description: str
+    recommendation: str
 
 
-@router.post("/api/analyze")
-def analyze_repository():
+class AnalyzeResponse(BaseModel):
+    repository: str
+    files_analyzed: int = Field(ge=0)
+    languages: list[str]
+    health_score: int = Field(ge=0, le=100)
+    findings: list[FindingResponse]
 
-    repo_path = Path("sample_repo")
 
-    repository = scan_repository(str(repo_path))
-
-    files = repository["files"]
-
-    findings = []
-
-    findings.extend(
-        analyze_quality(files, repo_path)
-    )
-
-    findings.extend(
-        analyze_testing(files, repo_path)
-    )
-
-    findings.extend(
-        analyze_security(files, repo_path)
-    )
-
-    # documentation analyzer here
-
-    for index, finding in enumerate(findings, start=1):
-        finding["id"] = f"F{index:03}"
-
-    health_score = calculate_health_score(findings)
-
-    return {
-        "repository": repository["repository"],
-        "files_analyzed": repository["files_analyzed"],
-        "languages": repository["languages"],
-        "health_score": health_score,
-        "findings": findings
-    }
+@router.post("/api/analyze", response_model=AnalyzeResponse)
+def analyze() -> AnalyzeResponse:
+    # Configured by the server operator, NEVER supplied in the HTTP request.
+    repository = os.environ.get("REPOMEDIC_SAMPLE_REPO")
+    root = Path(repository) if repository else PROJECT_ROOT / "sample_repo"
+    try:
+        return AnalyzeResponse(**analyze_repository(root))
+    except (ValueError, OSError):
+        LOGGER.warning("Repository analysis unavailable; verify the configured sample repository")
+        raise HTTPException(status_code=503, detail="Repository analysis is temporarily unavailable") from None

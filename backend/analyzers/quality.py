@@ -1,84 +1,56 @@
+"""Python AST rules: broad exception handling, long functions, syntax problems."""
+from __future__ import annotations
+
 import ast
+from pathlib import Path
+
+from .common import Finding, finding, safe_source_lines
+
+LONG_FUNCTION_LINES = 45
 
 
-MAX_FUNCTION_LINES = 30
-
-
-def analyze_quality(files, root):
-    findings = []
-
-    for file_path in files:
-
-        if file_path.suffix != ".py":
+def analyze_quality(files: list[Path], root: Path) -> list[Finding]:
+    results: list[Finding] = []
+    for path in files:
+        if path.suffix.lower() != ".py":
             continue
-
+        lines = safe_source_lines(path)
+        if lines is None:
+            continue
+        relative = path.relative_to(root).as_posix()
         try:
-            source = file_path.read_text(
-                encoding="utf-8",
-                errors="ignore"
-            )
-
-            tree = ast.parse(source)
-
-        except (OSError, SyntaxError):
+            tree = ast.parse("\n".join(lines), filename=relative)
+        except SyntaxError as error:
+            results.append(finding(
+                category="maintainability", severity="medium",
+                title="Python syntax error", file=relative, line=error.lineno,
+                description="This file contains Python syntax that cannot be parsed.",
+                recommendation="Resolve the syntax error before running or deploying this module.",
+            ))
             continue
-
         for node in ast.walk(tree):
-
             if isinstance(node, ast.ExceptHandler):
-
                 if node.type is None:
-
-                    findings.append({
-                        "category": "error_handling",
-                        "severity": "medium",
-                        "title": "Bare except clause",
-                        "file": str(file_path.relative_to(root)),
-                        "line": node.lineno,
-                        "description":
-                            "The code catches every exception without identifying the expected error.",
-                        "recommendation":
-                            "Catch specific exception types instead."
-                    })
-
-                elif (
-                    isinstance(node.type, ast.Name)
-                    and node.type.id == "Exception"
-                ):
-
-                    findings.append({
-                        "category": "error_handling",
-                        "severity": "medium",
-                        "title": "Overly broad exception handling",
-                        "file": str(file_path.relative_to(root)),
-                        "line": node.lineno,
-                        "description":
-                            "The code catches Exception broadly.",
-                        "recommendation":
-                            "Catch the specific exceptions expected here."
-                    })
-
-            if isinstance(
-                node,
-                (ast.FunctionDef, ast.AsyncFunctionDef)
-            ):
-
-                if hasattr(node, "end_lineno"):
-
-                    length = node.end_lineno - node.lineno + 1
-
-                    if length > MAX_FUNCTION_LINES:
-
-                        findings.append({
-                            "category": "maintainability",
-                            "severity": "low",
-                            "title": "Large function",
-                            "file": str(file_path.relative_to(root)),
-                            "line": node.lineno,
-                            "description":
-                                f"Function '{node.name}' spans {length} lines.",
-                            "recommendation":
-                                "Consider dividing this function into smaller responsibilities."
-                        })
-
-    return findings
+                    results.append(finding(
+                        category="error_handling", severity="medium",
+                        title="Bare except clause", file=relative, line=node.lineno,
+                        description="A bare except catches system-exiting exceptions as well as expected errors.",
+                        recommendation="Catch only the specific exception types this code expects.",
+                    ))
+                elif isinstance(node.type, ast.Name) and node.type.id == "Exception":
+                    results.append(finding(
+                        category="error_handling", severity="medium",
+                        title="Broad exception handler", file=relative, line=node.lineno,
+                        description="This handler catches Exception broadly.",
+                        recommendation="Catch more specific exception types where possible.",
+                    ))
+            if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                end = getattr(node, "end_lineno", None)
+                if end is not None and end - node.lineno + 1 > LONG_FUNCTION_LINES:
+                    results.append(finding(
+                        category="maintainability", severity="low",
+                        title="Long function", file=relative, line=node.lineno,
+                        description=f"Function '{node.name}' spans {end - node.lineno + 1} lines.",
+                        recommendation="Consider extracting logically independent operations into smaller functions.",
+                    ))
+    return results

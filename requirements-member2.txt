@@ -1,0 +1,7 @@
+# Use your team's pinned requirements when integrating. These packages are
+# required for the standalone API and its tests; do not duplicate existing pins.
+fastapi
+pydantic
+pytest
+httpx
+uvicorn

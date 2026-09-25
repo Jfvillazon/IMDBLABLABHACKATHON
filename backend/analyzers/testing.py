@@ -1,33 +1,36 @@
-def analyze_testing(files, root):
-    findings = []
+"""Detect whether Python and JavaScript/TypeScript code has conventional tests."""
+from __future__ import annotations
 
-    test_files = [
-        file
-        for file in files
-        if file.name.startswith("test_")
-        or file.name.endswith("_test.py")
-    ]
+from pathlib import Path
 
-    python_source_files = [
-        file
-        for file in files
-        if file.suffix == ".py"
-        and "tests" not in file.parts
-        and not file.name.startswith("test_")
-    ]
+from .common import Finding, finding
 
-    if python_source_files and not test_files:
+PYTHON_EXTENSIONS = frozenset({".py"})
+JS_EXTENSIONS = frozenset({".js", ".jsx", ".ts", ".tsx", ".mjs", ".cjs"})
 
-        findings.append({
-            "category": "testing",
-            "severity": "high",
-            "title": "No automated tests detected",
-            "file": ".",
-            "line": None,
-            "description":
-                "Python source files were found but no automated tests were detected.",
-            "recommendation":
-                "Add automated tests for important application behavior."
-        })
 
-    return findings
+def _is_test(path: Path) -> bool:
+    name = path.name.lower()
+    return (
+        name.startswith("test_") or name.endswith("_test.py") or
+        ".test." in name or ".spec." in name or
+        "__tests__" in {part.lower() for part in path.parts}
+    )
+
+
+def analyze_testing(files: list[Path], root: Path) -> list[Finding]:
+    source = [path for path in files
+              if path.suffix.lower() in (PYTHON_EXTENSIONS | JS_EXTENSIONS)
+              and not _is_test(path)]
+    if not source:
+        return []
+    tests = [path for path in files if _is_test(path)
+             and path.suffix.lower() in (PYTHON_EXTENSIONS | JS_EXTENSIONS)]
+    if tests:
+        return []
+    return [finding(
+        category="testing", severity="high", title="No automated tests detected",
+        file=".", line=None,
+        description="Source code was found but no conventionally named test files were detected.",
+        recommendation="Add automated tests for critical workflows and commit them with the source.",
+    )]
