@@ -1,0 +1,1465 @@
+# RepoMedic --- Plan of Execution --- Massi
+
+## Purpose
+
+This file is Massi's personal execution plan for the IBM Bob 2.0
+Hackathon.
+
+It is intentionally focused on **Massi's own build work**. Massi does
+**not** wait for the repository-analysis teammate or the frontend
+teammate before starting. The work is designed so that the investigation
+and validation backend can be developed, tested, and completed
+independently against stable contracts and controlled sample inputs.
+Integration with the other two workstreams happens after Massi's
+components already work on their own.
+
+The project-wide source of truth remains:
+
+`documentation/HACKATHON_EXECUTION_PLAN.md`
+
+This file defines **how Massi executes his part safely, incrementally,
+and with IBM Bob**.
+
+------------------------------------------------------------------------
+
+# 1. My Role
+
+## Primary ownership
+
+**Core Backend & AI-Assisted Debugging Engine**
+
+Massi owns:
+
+-   Bug Investigation Engine
+-   Relevant-file identification
+-   Root-cause analysis workflow
+-   Repair recommendation workflow
+-   Regression-test recommendation/workflow
+-   Validation Engine
+-   `POST /api/investigate`
+-   `POST /api/validate`
+-   shared investigation/validation schemas
+-   engineering-result/report pipeline where needed
+-   backend integration for these components
+-   IBM Bob workflow for this workstream
+-   final technical integration and verification
+
+## What the other members own
+
+**Member 2 --- Repository Analysis**
+
+-   repository scanner
+-   architecture/quality/testing/security analyzers
+-   findings
+-   health score
+-   `POST /api/analyze`
+
+**Member 3 --- Frontend**
+
+-   React/Vite UI
+-   dashboard
+-   findings display
+-   health score display
+-   investigation interface
+-   validation/result display
+-   frontend API integration
+
+These three workstreams run **in parallel**.
+
+Massi does not wait for Member 2 or Member 3 to finish.
+
+------------------------------------------------------------------------
+
+# 2. The Product Flow
+
+RepoMedic's golden path is:
+
+``` text
+Repository
+    ↓
+Analyze repository
+    ↓
+Health score + findings
+    ↓
+Select finding OR describe a bug
+    ↓
+Investigate
+    ↓
+Relevant files
+    ↓
+Likely root cause
+    ↓
+Repair recommendation
+    ↓
+Regression-test recommendation
+    ↓
+Validate
+    ↓
+Engineering result
+```
+
+Massi primarily owns this section:
+
+``` text
+Problem / Bug
+      ↓
+INVESTIGATE
+      ↓
+Relevant files
+      ↓
+Root cause
+      ↓
+Repair recommendation
+      ↓
+Regression-test workflow
+      ↓
+VALIDATE
+      ↓
+Engineering result
+```
+
+------------------------------------------------------------------------
+
+# 3. Non-Negotiable Development Rule
+
+We build in very small verified increments.
+
+For every increment:
+
+``` text
+PLAN
+ ↓
+IMPLEMENT
+ ↓
+RUN
+ ↓
+TEST
+ ↓
+VERIFY RESULT
+ ↓
+FIX IF NEEDED
+ ↓
+RETEST
+ ↓
+INSPECT GIT DIFF
+ ↓
+COMMIT WORKING STATE
+ ↓
+NEXT INCREMENT
+```
+
+Never stack several untested features.
+
+Never trust an AI statement that something works.
+
+A feature is complete only when we have personally run and verified it.
+
+------------------------------------------------------------------------
+
+# 4. Branch Safety
+
+Massi develops on:
+
+`dev`
+
+Do not implement Massi's unfinished work directly on `main`.
+
+Before every work session:
+
+``` bash
+git checkout dev
+git pull origin dev
+git status
+```
+
+Before starting a major new increment, also check whether `main`
+contains team changes that Massi needs.
+
+Do not merge blindly.
+
+Before every commit:
+
+``` bash
+git status
+git diff
+```
+
+Check:
+
+-   no secrets
+-   no `.env`
+-   no accidental unrelated files
+-   no teammate files modified unnecessarily
+-   no API contract changed accidentally
+
+Then commit the smallest working increment.
+
+Only merge/push stable integrated work to `main` when the team is ready.
+
+------------------------------------------------------------------------
+
+# 5. IBM Bob Strategy
+
+Available hackathon budget:
+
+**40 Bobcoins**
+
+Target:
+
+-   approximately **30--35 Bobcoins** available for meaningful planned
+    Bob work
+-   preserve approximately **5--10 Bobcoins** for late debugging,
+    integration, review, or demo emergencies
+
+This is a budget ceiling/strategy, not a requirement to waste credits.
+
+## Bob should be used for high-value work
+
+Use Bob for:
+
+-   understanding the repository
+-   planning implementation
+-   repository-aware investigation
+-   implementing bounded components
+-   debugging
+-   generating/reviewing tests
+-   integration diagnosis
+-   code review
+-   security/reliability review
+-   final readiness review
+
+Do not waste Bob on:
+
+-   trivial file creation
+-   basic Git commands
+-   cosmetic README formatting
+-   repetitive questions ChatGPT can answer
+-   giant unfocused prompts
+
+## Bob evidence
+
+After every meaningful Bob task:
+
+1.  Open the relevant Bob task.
+2.  Open its session consumption summary.
+3.  Take a clear screenshot.
+4.  Save it under:
+
+`bob_sessions/member1/`
+
+Suggested names:
+
+``` text
+massi_01_repository_plan.png
+massi_02_investigation_engine.png
+massi_03_investigation_review.png
+massi_04_validation_engine.png
+massi_05_integration_debugging.png
+massi_06_final_code_review.png
+massi_07_final_readiness.png
+```
+
+Do this during development, not at the last minute.
+
+------------------------------------------------------------------------
+
+# 6. Execution Roadmap
+
+------------------------------------------------------------------------
+
+## PHASE 0 --- Confirm My Workspace
+
+### Goal
+
+Make sure Massi is isolated on `dev` and can work safely.
+
+### Checklist
+
+-   [ ] `git checkout dev`
+-   [ ] `git pull origin dev`
+-   [ ] `git status`
+-   [ ] working tree is clean before implementation
+-   [ ] master execution plan exists locally
+-   [ ] this Massi execution plan exists locally
+-   [ ] backend directories exist
+-   [ ] tests directory exists
+-   [ ] `bob_sessions/member1/` exists
+-   [ ] repository opens correctly in IBM Bob
+-   [ ] Bob is using the correct hackathon account
+-   [ ] no secrets are present
+
+### Exit condition
+
+Massi can modify `dev` without touching stable `main`.
+
+------------------------------------------------------------------------
+
+## PHASE 1 --- Bob Task 01: Understand Before Coding
+
+### Goal
+
+Have Bob understand the real repository and Massi's exact
+responsibilities before Bob writes code.
+
+### Bob mode
+
+**Plan mode**
+
+### Bob reads
+
+-   `documentation/HACKATHON_EXECUTION_PLAN.md`
+-   `documentation/PLAN_OF_EXECUTION_MASSI.md`
+-   repository structure
+-   existing backend files
+-   existing tests
+-   `.bobignore`
+-   `.gitignore`
+
+### Bob must NOT
+
+-   modify files
+-   redesign RepoMedic
+-   implement Member 2's analyzer
+-   implement Member 3's frontend
+-   change API contracts
+-   add databases/authentication/microservices
+-   add unnecessary dependencies
+
+### Bob output expected
+
+-   understanding of Massi's responsibilities
+-   dependency/interface map
+-   recommended implementation order
+-   risks/blockers
+-   test strategy
+-   first smallest implementation increment
+
+### After Bob responds
+
+-   [ ] bring Bob's response to ChatGPT
+-   [ ] compare it with the master plan
+-   [ ] reject scope creep
+-   [ ] confirm no files changed
+-   [ ] capture Bob evidence
+-   [ ] check Bobcoin balance
+
+### Exit condition
+
+We agree on the first implementation increment.
+
+------------------------------------------------------------------------
+
+## PHASE 2 --- Minimal Backend Foundation
+
+### Goal
+
+Make Massi's backend runnable independently.
+
+Expected initial pieces:
+
+``` text
+backend/
+├── main.py
+├── models/
+│   └── schemas.py
+├── api/
+└── services/
+```
+
+### First behavior
+
+`GET /health`
+
+Expected:
+
+``` json
+{
+  "status": "ok"
+}
+```
+
+### Build
+
+Create only the minimum FastAPI setup required.
+
+### Test
+
+Start the backend, for example:
+
+``` bash
+uvicorn backend.main:app --reload
+```
+
+Then:
+
+``` bash
+curl http://127.0.0.1:8000/health
+```
+
+### Checklist
+
+-   [ ] FastAPI dependency available
+-   [ ] backend imports correctly
+-   [ ] application starts
+-   [ ] `/health` responds
+-   [ ] response is correct JSON
+-   [ ] no traceback
+-   [ ] focused test added if appropriate
+-   [ ] `git diff` reviewed
+-   [ ] working increment committed on `dev`
+
+### Bob usage
+
+Bob may implement/review the bounded FastAPI foundation after its plan
+is approved, but this should consume little budget.
+
+### Exit condition
+
+The backend starts reliably.
+
+------------------------------------------------------------------------
+
+## PHASE 3 --- Freeze Massi's Schemas
+
+### Goal
+
+Create stable models so Massi can build independently of the frontend
+and analyzer.
+
+Core investigation contract:
+
+`POST /api/investigate`
+
+Conceptual request:
+
+``` json
+{
+  "issue": "Checkout crashes when quantity is missing."
+}
+```
+
+Conceptual response:
+
+``` json
+{
+  "issue": "Checkout crashes when quantity is missing.",
+  "relevant_files": [
+    "sample_repo/checkout.py"
+  ],
+  "root_cause": "Missing validation for quantity before use.",
+  "suggested_fix": "Validate quantity before checkout calculations.",
+  "test_generated": "Add a regression test for missing quantity.",
+  "confidence": 0.95
+}
+```
+
+Core validation contract:
+
+`POST /api/validate`
+
+Conceptual response:
+
+``` json
+{
+  "tests_run": 8,
+  "passed": 8,
+  "failed": 0,
+  "status": "passed"
+}
+```
+
+The exact project contract in `HACKATHON_EXECUTION_PLAN.md` takes
+precedence if wording differs.
+
+### Checklist
+
+-   [ ] investigation request model
+-   [ ] investigation response model
+-   [ ] validation request model if required
+-   [ ] validation response model
+-   [ ] serialization tested
+-   [ ] invalid input tested
+-   [ ] schemas do not depend on unfinished frontend
+-   [ ] schemas do not depend on unfinished analyzer
+-   [ ] contract remains compatible with master plan
+-   [ ] commit working schemas
+
+### Bob usage
+
+Use Bob only if helpful for reviewing schema consistency. Do not spend a
+major task on trivial Pydantic definitions.
+
+------------------------------------------------------------------------
+
+## PHASE 4 --- Create/Confirm Controlled Debugging Fixture
+
+### Goal
+
+Massi needs a predictable repository problem so the investigation engine
+can be completed without waiting for Member 2.
+
+Primary demo scenario:
+
+``` text
+Checkout crashes when quantity is missing.
+```
+
+Controlled expected cause:
+
+``` text
+checkout logic uses quantity without validating it first
+```
+
+### Important
+
+Coordinate ownership if Member 2 is also editing `sample_repo/`.
+
+Do not overwrite teammate work.
+
+If the sample fixture is already being built by someone else, use the
+agreed fixture rather than creating a competing version.
+
+### Required behavior
+
+Before repair:
+
+-   a regression scenario reproduces the failure
+
+After repair:
+
+-   the same regression scenario passes
+
+### Checklist
+
+-   [ ] controlled bug exists
+-   [ ] failure can be reproduced
+-   [ ] expected relevant file is known
+-   [ ] no real credentials
+-   [ ] fixture is deterministic
+-   [ ] baseline behavior recorded
+
+### Bob usage
+
+Light review only. Save Bob budget for the real investigation engine.
+
+------------------------------------------------------------------------
+
+## PHASE 5 --- Bob Task 02: Investigation Engine Plan + Implementation
+
+### Goal
+
+Build Massi's main component:
+
+`backend/services/investigation.py`
+
+The engine takes an issue and repository context and returns structured
+engineering reasoning.
+
+### Minimum workflow
+
+``` text
+Issue
+ ↓
+Normalize/validate input
+ ↓
+Inspect repository files
+ ↓
+Rank/select relevant files
+ ↓
+Inspect relevant code
+ ↓
+Determine likely root cause
+ ↓
+Generate repair recommendation
+ ↓
+Generate regression-test recommendation
+ ↓
+Return structured result
+```
+
+### MVP principle
+
+It does NOT need to debug every repository on Earth.
+
+It must reliably solve the controlled RepoMedic workflow and degrade
+safely for unknown problems.
+
+### Bob usage --- HEAVY
+
+This is one of the best places to spend Bobcoins.
+
+Workflow:
+
+1.  Bob Plan on this bounded component.
+2.  ChatGPT + Massi review Bob's proposed design.
+3.  Bob Agent implements only approved files.
+4.  Massi inspects `git diff`.
+5.  Run focused tests.
+6.  Give failures back to Bob only when repository-aware debugging is
+    valuable.
+7.  Capture Bob session evidence.
+
+### Files Bob may primarily modify
+
+``` text
+backend/services/investigation.py
+backend/models/schemas.py
+tests/test_investigation.py
+```
+
+Possibly the investigation API later, but keep service logic separate
+first.
+
+### Required cases
+
+#### Case A --- Known checkout bug
+
+Input:
+
+``` text
+Checkout crashes when quantity is missing.
+```
+
+Expected:
+
+-   checkout file identified
+-   missing validation identified
+-   meaningful repair recommendation
+-   regression-test recommendation
+-   reasonable confidence
+
+#### Case B --- Empty issue
+
+Expected:
+
+-   controlled validation error
+-   no Python crash
+
+#### Case C --- Unknown issue
+
+Expected:
+
+-   graceful no-match / low-confidence result
+-   no fabricated certainty
+
+#### Case D --- Repository/path unavailable
+
+Expected:
+
+-   controlled error
+-   no uncontrolled traceback
+
+### Checklist
+
+-   [ ] service accepts issue
+-   [ ] input validated
+-   [ ] repository inspected safely
+-   [ ] relevant files returned
+-   [ ] root cause returned
+-   [ ] suggested fix returned
+-   [ ] regression-test recommendation returned
+-   [ ] confidence returned
+-   [ ] unknown issue handled
+-   [ ] missing repository handled
+-   [ ] tests written
+-   [ ] all investigation tests pass
+-   [ ] diff reviewed
+-   [ ] Bob evidence captured
+-   [ ] working state committed
+
+### Exit condition
+
+Investigation works as a Python service without HTTP/frontend/analyzer
+dependencies.
+
+------------------------------------------------------------------------
+
+## PHASE 6 --- Investigation API
+
+### Goal
+
+Expose the already-working investigation service.
+
+Create:
+
+`POST /api/investigate`
+
+### Important rule
+
+The endpoint should be thin.
+
+Business logic belongs in the service.
+
+### Manual test
+
+Example:
+
+``` bash
+curl -X POST http://127.0.0.1:8000/api/investigate \
+  -H "Content-Type: application/json" \
+  -d '{"issue":"Checkout crashes when quantity is missing."}'
+```
+
+### Checklist
+
+-   [ ] route exists
+-   [ ] request schema enforced
+-   [ ] service called
+-   [ ] response schema enforced
+-   [ ] status codes reasonable
+-   [ ] invalid request handled
+-   [ ] known bug returns expected result
+-   [ ] endpoint tests pass
+-   [ ] existing `/health` still works
+-   [ ] diff reviewed
+-   [ ] commit working API
+
+### Bob usage
+
+Use Bob for bounded implementation/review if useful. Do not start a new
+giant task.
+
+------------------------------------------------------------------------
+
+## PHASE 7 --- Regression-Test Workflow
+
+### Goal
+
+Turn investigation into evidence.
+
+Controlled sequence:
+
+``` text
+Known bug
+ ↓
+Regression test
+ ↓
+Test fails before repair
+ ↓
+Repair
+ ↓
+Same test passes after repair
+```
+
+### Record actual results
+
+Do not fabricate.
+
+Capture:
+
+-   test name
+-   result before
+-   result after
+-   number of tests
+-   number passed
+-   number failed
+
+### Checklist
+
+-   [ ] bug reproduced
+-   [ ] regression test represents real failure
+-   [ ] regression test fails for correct reason
+-   [ ] controlled repair identified/applied when appropriate
+-   [ ] regression test passes afterward
+-   [ ] unrelated tests still pass
+
+### Bob usage
+
+Bob can help generate/review the regression test and reason about
+failure output.
+
+------------------------------------------------------------------------
+
+## PHASE 8 --- Bob Task 03: Validation Engine
+
+### Goal
+
+Build:
+
+`backend/services/validation.py`
+
+The validation engine answers:
+
+> Did the repair actually work?
+
+### Minimum flow
+
+``` text
+Known test target
+ ↓
+Execute constrained pytest workflow
+ ↓
+Capture result
+ ↓
+Interpret result
+ ↓
+Return structured validation report
+```
+
+### Security rule
+
+Do NOT create an API that executes arbitrary user shell commands.
+
+Validation should run approved/constrained test commands.
+
+### Required outcomes
+
+**Passing suite**
+
+``` json
+{
+  "tests_run": 8,
+  "passed": 8,
+  "failed": 0,
+  "status": "passed"
+}
+```
+
+**Failing suite**
+
+Returns actual failures and `status = failed`.
+
+**Infrastructure error**
+
+Returns controlled error information.
+
+### Bob usage --- HEAVY/MEDIUM
+
+Use Bob to:
+
+-   plan safe validation design
+-   implement bounded service
+-   reason about subprocess/test execution
+-   review security
+-   create focused tests
+
+### Checklist
+
+-   [ ] validation service exists
+-   [ ] execution is constrained
+-   [ ] pytest output captured
+-   [ ] return code interpreted
+-   [ ] pass/fail counts reliable
+-   [ ] timeout/error behavior considered
+-   [ ] arbitrary command injection avoided
+-   [ ] validation tests pass
+-   [ ] Bob review performed
+-   [ ] evidence captured
+-   [ ] working state committed
+
+------------------------------------------------------------------------
+
+## PHASE 9 --- Validation API
+
+### Goal
+
+Expose:
+
+`POST /api/validate`
+
+### Checklist
+
+-   [ ] endpoint exists
+-   [ ] schema enforced
+-   [ ] validation service connected
+-   [ ] passing case works
+-   [ ] failing case works
+-   [ ] infrastructure error handled
+-   [ ] endpoint tests pass
+-   [ ] `/health` still works
+-   [ ] `/api/investigate` still works
+-   [ ] commit working API
+
+### Exit condition
+
+Massi's two APIs work independently:
+
+``` text
+POST /api/investigate
+POST /api/validate
+```
+
+------------------------------------------------------------------------
+
+## PHASE 10 --- Massi Standalone End-to-End Test
+
+### Goal
+
+Finish Massi's own work before depending on teammates.
+
+Use controlled/mock input where Member 2's `/api/analyze` output will
+eventually connect.
+
+Test:
+
+``` text
+Known finding/bug
+ ↓
+/api/investigate
+ ↓
+Relevant files
+ ↓
+Root cause
+ ↓
+Repair recommendation
+ ↓
+Regression-test recommendation
+ ↓
+/api/validate
+ ↓
+Real pass/fail result
+```
+
+### Checklist
+
+-   [ ] backend starts from clean terminal
+-   [ ] `/health` works
+-   [ ] investigation works
+-   [ ] validation works
+-   [ ] known bug flow works
+-   [ ] invalid input works safely
+-   [ ] unknown issue works safely
+-   [ ] full Massi test suite passes
+-   [ ] no dependency on frontend
+-   [ ] no dependency on unfinished analyzer
+-   [ ] no hardcoded machine-specific paths
+-   [ ] no secrets
+-   [ ] `git diff` clean after commit
+
+### Major milestone
+
+At this point:
+
+**MASSI'S CORE BUILD IS FUNCTIONALLY COMPLETE.**
+
+We can integrate teammates later without having waited for them.
+
+------------------------------------------------------------------------
+
+## PHASE 11 --- Bob Task 04: Massi Code Review
+
+### Goal
+
+Have Bob inspect Massi's completed work as one coherent subsystem.
+
+Ask Bob to review for:
+
+-   correctness
+-   API-contract consistency
+-   error handling
+-   path safety
+-   subprocess safety
+-   missing tests
+-   duplicated logic
+-   unnecessary complexity
+-   hallucinated/unsupported investigation behavior
+-   demo failure risks
+
+### Rule
+
+Bob does not automatically rewrite everything.
+
+For each finding:
+
+``` text
+Bob finding
+ ↓
+Massi/ChatGPT verify
+ ↓
+Accept or reject
+ ↓
+Small fix
+ ↓
+Test
+```
+
+### Checklist
+
+-   [ ] Bob review completed
+-   [ ] findings triaged
+-   [ ] justified fixes implemented
+-   [ ] tests rerun
+-   [ ] standalone flow rerun
+-   [ ] Bob evidence captured
+-   [ ] stable commit created
+
+------------------------------------------------------------------------
+
+## PHASE 12 --- Wait-Free Integration Contract
+
+Massi can now provide teammates with stable interfaces.
+
+Member 2 eventually feeds a finding/issue into investigation.
+
+Member 3 calls Massi's APIs.
+
+Massi should communicate:
+
+``` text
+POST /api/investigate
+request schema
+response schema
+
+POST /api/validate
+request schema
+response schema
+```
+
+No teammate needs to understand Massi's internal implementation.
+
+This is why parallel development works.
+
+------------------------------------------------------------------------
+
+## PHASE 13 --- Integrate Member 2 When Ready
+
+When `/api/analyze` is available:
+
+``` text
+/api/analyze
+ ↓
+finding
+ ↓
+/api/investigate
+```
+
+### Integration checks
+
+-   [ ] finding fields match agreed contract
+-   [ ] file paths are compatible
+-   [ ] finding description can become investigation context
+-   [ ] IDs/severity preserved where relevant
+-   [ ] no schema mismatch
+-   [ ] no analyzer rewrite unless truly necessary
+
+### Bob usage
+
+Use Bob for repository-wide debugging if integration problems are
+non-trivial.
+
+------------------------------------------------------------------------
+
+## PHASE 14 --- Integrate Member 3 When Ready
+
+When frontend is ready:
+
+``` text
+Frontend
+ ↓
+/api/investigate
+ ↓
+Massi engine
+ ↓
+Frontend result
+
+Frontend
+ ↓
+/api/validate
+ ↓
+Massi validation
+ ↓
+Frontend result
+```
+
+### Check
+
+-   [ ] CORS
+-   [ ] endpoint URL
+-   [ ] JSON names
+-   [ ] loading behavior
+-   [ ] error behavior
+-   [ ] empty results
+-   [ ] confidence display if used
+-   [ ] validation result display
+
+Massi fixes backend integration problems; Member 3 owns UI
+implementation.
+
+------------------------------------------------------------------------
+
+## PHASE 15 --- Full Team Golden Path
+
+Now run:
+
+``` text
+Repository
+ ↓
+Analyze
+ ↓
+Findings + health score
+ ↓
+Select finding
+ ↓
+Investigate
+ ↓
+Relevant files
+ ↓
+Root cause
+ ↓
+Suggested repair
+ ↓
+Regression test
+ ↓
+Validate
+ ↓
+Engineering result
+```
+
+### Stop rule
+
+If a critical step fails:
+
+**STOP adding features.**
+
+Fix the golden path first.
+
+------------------------------------------------------------------------
+
+## PHASE 16 --- Bob Task 05: Integration Debugging
+
+### Goal
+
+Use Bob on the full repository after all three workstreams meet.
+
+This is another high-value Bob task.
+
+Ask Bob to inspect:
+
+-   backend
+-   frontend
+-   tests
+-   sample repository
+-   master plan
+-   Massi plan
+
+Focus on:
+
+-   contract mismatch
+-   broken imports
+-   incorrect file paths
+-   error-handling gaps
+-   missing tests
+-   unsafe behavior
+-   integration failures
+-   demo risks
+
+### Checklist
+
+-   [ ] Bob integration review completed
+-   [ ] legitimate findings fixed
+-   [ ] all tests rerun
+-   [ ] golden path rerun
+-   [ ] evidence screenshot captured
+-   [ ] Bobcoin balance checked
+
+------------------------------------------------------------------------
+
+## PHASE 17 --- Metrics
+
+Capture only real measurements.
+
+Potential metrics:
+
+-   analysis duration
+-   files analyzed
+-   findings count
+-   tests run
+-   tests passed before repair
+-   tests failed before repair
+-   tests passed after repair
+-   tests failed after repair
+-   health score
+-   investigation duration if useful
+
+Never invent a productivity percentage.
+
+------------------------------------------------------------------------
+
+## PHASE 18 --- Feature Freeze
+
+Once the golden path works reliably:
+
+**STOP adding risky MVP features.**
+
+Only allow:
+
+-   bug fixes
+-   tests
+-   UI clarity
+-   documentation
+-   evidence
+-   demo preparation
+-   low-risk polish
+
+Stretch features happen only if everything is stable.
+
+------------------------------------------------------------------------
+
+## PHASE 19 --- Bob Task 06: Final Technical Review
+
+Reserve Bobcoins for this.
+
+Ask Bob to check:
+
+-   implementation vs documented architecture
+-   API consistency
+-   test gaps
+-   security issues
+-   stale/dead code
+-   contradictory documentation
+-   demo failure points
+-   setup/run risks
+
+### Checklist
+
+-   [ ] final Bob review
+-   [ ] important findings fixed
+-   [ ] tests rerun
+-   [ ] golden path rerun
+-   [ ] evidence captured
+-   [ ] reserve remains if possible
+
+------------------------------------------------------------------------
+
+## PHASE 20 --- Clean Clone Test
+
+Test like a judge.
+
+From a clean copy:
+
+-   [ ] clone repository
+-   [ ] install backend dependencies
+-   [ ] install frontend dependencies
+-   [ ] start backend
+-   [ ] start frontend
+-   [ ] run analysis
+-   [ ] run investigation
+-   [ ] run validation
+-   [ ] run tests
+-   [ ] verify README commands
+-   [ ] confirm no local-only path
+-   [ ] confirm no missing file
+-   [ ] confirm no secret
+
+------------------------------------------------------------------------
+
+## PHASE 21 --- Bob Evidence Audit
+
+Before submission:
+
+-   [ ] all meaningful Massi Bob sessions captured
+-   [ ] Member 2 screenshots present
+-   [ ] Member 3 screenshots present
+-   [ ] filenames understandable
+-   [ ] screenshots readable
+-   [ ] `bob_sessions/` committed
+-   [ ] screenshots visible in final repository
+
+------------------------------------------------------------------------
+
+## PHASE 22 --- Final Git Audit
+
+Check:
+
+``` bash
+git status
+git log --oneline -10
+```
+
+Verify:
+
+-   [ ] correct branch/state
+-   [ ] no uncommitted required work
+-   [ ] no secrets
+-   [ ] no `.env`
+-   [ ] no temporary debug junk
+-   [ ] final tests pass
+-   [ ] GitHub contains expected files
+
+------------------------------------------------------------------------
+
+## PHASE 23 --- Demo Rehearsal
+
+Run the exact presentation twice.
+
+### Demo sequence
+
+1.  Explain developer problem.
+2.  Open RepoMedic.
+3.  Analyze controlled repository.
+4.  Show health/findings.
+5.  Select missing-validation problem.
+6.  Investigate.
+7.  Show relevant file(s).
+8.  Show root cause.
+9.  Show suggested repair.
+10. Show regression-test recommendation.
+11. Validate.
+12. Show real test result.
+13. Show measurable before/after evidence.
+14. Explain where IBM Bob was used during development.
+
+### Rule
+
+Sunday/final hours are for verification and emergency fixes, not
+architectural rewrites.
+
+------------------------------------------------------------------------
+
+# 7. Massi Completion Definition
+
+Massi's personal implementation is complete when all of these are true:
+
+-   [ ] backend starts reliably
+-   [ ] `/health` works
+-   [ ] schemas are stable
+-   [ ] investigation service works
+-   [ ] relevant-file identification works for demo case
+-   [ ] root-cause output works
+-   [ ] repair recommendation works
+-   [ ] regression-test recommendation works
+-   [ ] unknown issue handled safely
+-   [ ] `/api/investigate` works
+-   [ ] validation service works
+-   [ ] passing tests recognized
+-   [ ] failing tests recognized
+-   [ ] `/api/validate` works
+-   [ ] standalone investigate → validate flow works
+-   [ ] tests pass
+-   [ ] Bob reviewed the subsystem
+-   [ ] Bob evidence saved
+-   [ ] work is committed safely on `dev`
+
+Massi does **not** need the frontend or analyzer finished to reach this
+milestone.
+
+------------------------------------------------------------------------
+
+# 8. Priority If Time Becomes Tight
+
+Always prioritize:
+
+``` text
+1. Working Massi investigation engine
+2. Working validation engine
+3. Correct APIs
+4. Tests
+5. Full team golden path
+6. IBM Bob evidence
+7. Reliability
+8. Real metrics
+9. Documentation
+10. UI polish
+11. Stretch features
+```
+
+Do not sacrifice a working system for a flashy extra.
+
+------------------------------------------------------------------------
+
+# 9. Standard AI Prompt Workflow
+
+Before a significant coding task:
+
+1.  Tell ChatGPT the exact current checkpoint.
+2.  Ask ChatGPT for the bounded Bob/Codex prompt.
+3.  Give Bob/Codex only the relevant task.
+4.  Inspect the output.
+5.  Run it.
+6.  Test it.
+7.  Bring errors/results back to ChatGPT.
+8.  Fix.
+9.  Retest.
+10. Commit.
+
+Never send:
+
+> Build RepoMedic.
+
+Instead scope every AI task with:
+
+-   context
+-   objective
+-   files to inspect
+-   files allowed to modify
+-   files forbidden to modify
+-   API contract
+-   requirements
+-   error cases
+-   tests
+-   acceptance criteria
+-   out-of-scope items
+
+------------------------------------------------------------------------
+
+# 10. Current Checkpoint
+
+At the start of Massi's execution:
+
+``` text
+Project concept: FROZEN
+Master plan: READY
+Team responsibilities: DEFINED
+Bob: INSTALLED
+Bob budget: 40 Bobcoins initially
+Repository: CREATED
+Massi working branch: dev
+Massi implementation: READY TO START
+```
+
+## Immediate next action
+
+**Do not build everything.**
+
+First:
+
+1.  switch to `dev`
+2.  update/verify `dev`
+3.  save this plan
+4.  inspect `git status`
+5.  open the full repository in IBM Bob
+6.  start **Bob Task 01 in Plan mode**
+7.  Bob reads both execution documents and the repository
+8.  Bob modifies nothing
+9.  bring Bob's plan back to ChatGPT
+10. approve the first small implementation increment
+11. begin coding
+
+------------------------------------------------------------------------
+
+# 11. Final Principle
+
+Massi's workflow is:
+
+``` text
+INDEPENDENT CORE BUILD
+        ↓
+INVESTIGATION WORKS
+        ↓
+VALIDATION WORKS
+        ↓
+MASSI STANDALONE TEST
+        ↓
+BOB REVIEW
+        ↓
+TEAM INTEGRATION
+        ↓
+FULL GOLDEN PATH
+        ↓
+TEST + MEASURE
+        ↓
+FREEZE
+        ↓
+FINAL REVIEW
+        ↓
+DEMO
+```
+
+We do not wait for the other workstreams.
+
+We do not break stable code to chase features.
+
+We do not let AI silently redesign the project.
+
+We build one verified layer at a time until Massi's subsystem is
+complete.
