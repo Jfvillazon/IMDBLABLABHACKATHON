@@ -927,8 +927,8 @@ Example output:
   ],
   "root_cause": "Input is used before validation.",
   "suggested_fix": "Validate the request before processing.",
-  "test_generated": true,
-  "confidence": "high"
+  "test_generated": "Add a regression test for missing quantity.",
+  "confidence": 0.95
 }
 ```
 
@@ -1108,8 +1108,8 @@ Response:
   ],
   "root_cause": "Input is used before validation.",
   "suggested_fix": "Validate request before processing.",
-  "test_generated": true,
-  "confidence": "high"
+  "test_generated": "Add a regression test for missing quantity.",
+  "confidence": 0.95
 }
 ```
 
