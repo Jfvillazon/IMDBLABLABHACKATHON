@@ -63,3 +63,37 @@ class ValidateResponse(BaseModel):
     status: Literal["passed", "failed", "error"] = Field(
         ..., description="Overall validation outcome."
     )
+
+
+# ---------------------------------------------------------------------------
+# Engineering Report
+# ---------------------------------------------------------------------------
+
+
+class EngineeringReport(BaseModel):
+    """Combined engineering report produced by build_engineering_report."""
+
+    issue: str = Field(..., description="The original issue description.")
+    relevant_files: List[str] = Field(
+        ..., description="Repository files most relevant to the issue."
+    )
+    root_cause: str = Field(..., description="Likely root cause of the issue.")
+    suggested_fix: str = Field(..., description="Recommended repair for the root cause.")
+    regression_test: str = Field(
+        ..., description="Regression-test recommendation text."
+    )
+    confidence: float = Field(
+        ...,
+        ge=0.0,
+        le=1.0,
+        description="Confidence score for the investigation result (0.0 – 1.0).",
+    )
+    tests_run: int = Field(..., ge=0, description="Total number of tests executed.")
+    passed: int = Field(..., ge=0, description="Number of tests that passed.")
+    failed: int = Field(..., ge=0, description="Number of tests that failed.")
+    validation_status: Literal["passed", "failed", "error"] = Field(
+        ..., description="Overall validation outcome."
+    )
+    outcome: str = Field(
+        ..., description="Concise engineering outcome derived from the validation result."
+    )
