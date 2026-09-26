@@ -1,10 +1,12 @@
 from fastapi import FastAPI
 
+from backend.api.analyze import router as analyze_router
 from backend.api.investigate import router as investigate_router
 from backend.api.validate import router as validate_router
 
 app = FastAPI(title="RepoMedic")
 
+app.include_router(analyze_router)
 app.include_router(investigate_router)
 app.include_router(validate_router)
 
