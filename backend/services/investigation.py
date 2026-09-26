@@ -10,8 +10,10 @@ Algorithm:
   3. Score each file for relevance to the issue using deterministic keyword signals.
   4. Select up to 3 highest-scoring files as relevant_files.
   5. Match the issue against a small rule table to find a known investigation category.
-  6. Produce root_cause, suggested_fix, test_generated, and confidence from the match.
-  7. Fall back gracefully when no strong rule matches.
+x  6. Produce root_cause, suggested_fix, and confidence from the match.
+  7. Build a concrete regression-test recommendation via
+     _build_regression_test_recommendation().
+  8. Fall back gracefully when no strong rule matches.
 
 All paths returned are relative to repository_path.
 This engine is READ-ONLY; it never modifies any file.
@@ -65,7 +67,7 @@ LOW_CONFIDENCE = 0.25
 #     category_keywords: list[str]  — used for file-relevance boosting
 #     root_cause:        str
 #     suggested_fix:     str
-#     test_generated:    str
+#     category:          str        — label used to build the test recommendation
 #   )
 #
 # Rules are evaluated in order; the first match wins.
@@ -78,7 +80,7 @@ _RULES: List[_Rule] = [
     # Rule 1 — Missing / unvalidated quantity in checkout
     # -----------------------------------------------------------------------
     (
-        # trigger: issue must mention both checkout-family AND quantity-family words
+        # trigger: issue must mention checkout-family words
         ["checkout", "cart", "order", "purchase"],
         ["quantity", "qty", "amount", "checkout", "cart", "order"],
         (
@@ -90,10 +92,7 @@ _RULES: List[_Rule] = [
             "or payment processing. Raise a clear error or return a safe default "
             "when quantity is absent or invalid."
         ),
-        (
-            "Add a regression test verifying that checkout rejects or safely "
-            "handles a missing or None quantity without raising an unhandled exception."
-        ),
+        "checkout",
     ),
     # -----------------------------------------------------------------------
     # Rule 2 — Authentication / login failure
@@ -110,10 +109,7 @@ _RULES: List[_Rule] = [
             "credentials. Ensure all failure paths return appropriate responses "
             "and do not expose sensitive data."
         ),
-        (
-            "Add a regression test covering authentication with invalid or missing "
-            "credentials to verify the correct error response is returned."
-        ),
+        "authentication",
     ),
     # -----------------------------------------------------------------------
     # Rule 3 — Payment processing failure
@@ -129,10 +125,7 @@ _RULES: List[_Rule] = [
             "Validate all required payment fields (amount, currency, method) before "
             "initiating any transaction. Return a controlled error for invalid inputs."
         ),
-        (
-            "Add a regression test that verifies payment processing rejects "
-            "invalid or incomplete payment data without raising an unhandled exception."
-        ),
+        "payment",
     ),
     # -----------------------------------------------------------------------
     # Rule 4 — Configuration / environment variable issues
@@ -148,10 +141,7 @@ _RULES: List[_Rule] = [
             "Validate that all required configuration keys exist and have acceptable "
             "values at application startup. Provide clear error messages for missing config."
         ),
-        (
-            "Add a regression test that verifies the application detects and reports "
-            "missing or invalid configuration values rather than failing silently."
-        ),
+        "configuration",
     ),
     # -----------------------------------------------------------------------
     # Rule 5 — Generic input validation failure
@@ -167,12 +157,93 @@ _RULES: List[_Rule] = [
             "Add input validation before processing user-supplied data. "
             "Return a descriptive error when required fields are absent or invalid."
         ),
-        (
-            "Add a regression test that submits invalid or missing input to the "
-            "affected endpoint and verifies a safe, informative error is returned."
-        ),
+        "input_validation",
     ),
 ]
+
+
+# ---------------------------------------------------------------------------
+# Regression-test recommendation builder
+# ---------------------------------------------------------------------------
+
+# Per-category concrete recommendation templates.
+# Each value is a complete, actionable string that explains:
+#   (1) what behaviour to test,
+#   (2) what input / edge case should trigger the test, and
+#   (3) what expected outcome should be asserted.
+_CATEGORY_RECOMMENDATIONS: dict = {
+    "checkout": (
+        "Add a regression test that calls the checkout function (or endpoint) "
+        "with quantity=None and with quantity omitted entirely. "
+        "Assert that the request is rejected with a clear validation error "
+        "before any price calculation is attempted, and that no unhandled "
+        "exception propagates to the caller."
+    ),
+    "authentication": (
+        "Add a regression test that submits a login or token-verification "
+        "request using an invalid credential (e.g. a blank password, an "
+        "expired token, and a token with an invalid signature). "
+        "Assert that each attempt is rejected with the correct authentication "
+        "error response and that no valid session or token is issued."
+    ),
+    "payment": (
+        "Add a regression test that invokes the payment or charge function "
+        "with a missing amount (None), a zero amount, and a negative amount. "
+        "Assert that each case is rejected with a controlled validation error "
+        "before any external payment processor or transaction is contacted."
+    ),
+    "configuration": (
+        "Add a regression test that starts (or initialises) the application "
+        "with a required configuration key or environment variable removed. "
+        "Assert that the application raises a clear, descriptive configuration "
+        "error at startup rather than failing silently or crashing with an "
+        "unrelated runtime exception later."
+    ),
+    "input_validation": (
+        "Add a regression test that submits None, an empty string, and a "
+        "structurally invalid value to the affected input field or endpoint. "
+        "Assert that each submission is rejected with a descriptive validation "
+        "error before any business logic or persistence layer is reached."
+    ),
+}
+
+
+def _build_regression_test_recommendation(category: Optional[str], issue: str) -> str:
+    """
+    Return a concrete, deterministic regression-test recommendation string.
+
+    Parameters
+    ----------
+    category:
+        Investigation category label produced by the matched rule
+        (e.g. ``"checkout"``, ``"authentication"``), or ``None`` for the
+        generic fallback path.
+    issue:
+        The original issue description.  Used only in the fallback case to
+        provide minimal context without inventing repository-specific details.
+
+    Returns
+    -------
+    str
+        A non-empty, human-readable recommendation that describes what
+        behaviour to test, what input/edge case to use, and what outcome
+        to assert.  Never returns an empty string.
+    """
+    if category is not None:
+        recommendation = _CATEGORY_RECOMMENDATIONS.get(category)
+        if recommendation:
+            return recommendation
+
+    # Generic fallback: quote up to 80 chars of the issue for context without
+    # inventing details that were not discovered by the investigation engine.
+    issue_preview = issue.strip()[:80]
+    return (
+        f'Add a regression test that reproduces the reported condition: '
+        f'"{issue_preview}". '
+        f"Supply the specific input or state that triggers the problem, "
+        f"then assert that the system responds with a controlled, expected "
+        f"outcome rather than raising an unhandled exception."
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -365,10 +436,11 @@ def investigate_issue(issue: str, repository_path: str) -> InvestigateResponse:
     # Build result from matched rule or fallback
     # ------------------------------------------------------------------
     if matched_rule:
-        _, _, root_cause, suggested_fix, test_generated = matched_rule
+        _, _, root_cause, suggested_fix, category = matched_rule
         confidence = HIGH_CONFIDENCE
     else:
         # Fallback: no strong rule match.
+        category = None
         root_cause = (
             "No deterministic root cause could be identified for this issue. "
             "Manual inspection of the relevant files is recommended."
@@ -378,14 +450,9 @@ def investigate_issue(issue: str, repository_path: str) -> InvestigateResponse:
             "validation, unhandled edge cases, or incorrect assumptions about "
             "the state of external dependencies."
         )
-        # Generate a test recommendation based on issue keywords when possible.
-        issue_preview = issue.strip()[:80]
-        test_generated = (
-            f"Add a regression test that reproduces the reported condition: "
-            f'"{issue_preview}". Verify the system responds safely rather than '
-            f"raising an unhandled exception."
-        )
         confidence = LOW_CONFIDENCE
+
+    test_generated = _build_regression_test_recommendation(category, issue)
 
     return InvestigateResponse(
         issue=issue,
