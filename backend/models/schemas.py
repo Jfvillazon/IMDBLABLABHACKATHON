@@ -1,7 +1,7 @@
 """
 Shared Pydantic API schemas for RepoMedic.
 
-Approved contract (massiplanvF, confirmed Increment 2):
+Approved contract (team_member1_plan_final.md, confirmed Increment 2):
   - InvestigateResponse.test_generated : str
       The regression-test recommendation text.
   - InvestigateResponse.confidence     : float  (0.0 – 1.0)

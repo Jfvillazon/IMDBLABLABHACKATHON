@@ -1,23 +1,23 @@
-# RepoMedic --- Plan of Execution --- Massi
+# RepoMedic --- Plan of Execution --- Member 1
 
 ## Purpose
 
-This file is Massi's personal execution plan for the IBM Bob 2.0
+This file is Member 1's personal execution plan for the IBM Bob 2.0
 Hackathon.
 
-It is intentionally focused on **Massi's own build work**. Massi does
+It is intentionally focused on **Member 1's own build work**. Member 1 does
 **not** wait for the repository-analysis teammate or the frontend
 teammate before starting. The work is designed so that the investigation
 and validation backend can be developed, tested, and completed
 independently against stable contracts and controlled sample inputs.
-Integration with the other two workstreams happens after Massi's
+Integration with the other two workstreams happens after Member 1's
 components already work on their own.
 
 The project-wide source of truth remains:
 
 `documentation/HACKATHON_EXECUTION_PLAN.md`
 
-This file defines **how Massi executes his part safely, incrementally,
+This file defines **how Member 1 executes his part safely, incrementally,
 and with IBM Bob**.
 
 ------------------------------------------------------------------------
@@ -28,7 +28,7 @@ and with IBM Bob**.
 
 **Core Backend & AI-Assisted Debugging Engine**
 
-Massi owns:
+Member 1 owns:
 
 -   Bug Investigation Engine
 -   Relevant-file identification
@@ -66,7 +66,7 @@ Massi owns:
 
 These three workstreams run **in parallel**.
 
-Massi does not wait for Member 2 or Member 3 to finish.
+Member 1 does not wait for Member 2 or Member 3 to finish.
 
 ------------------------------------------------------------------------
 
@@ -98,7 +98,7 @@ Validate
 Engineering result
 ```
 
-Massi primarily owns this section:
+Member 1 primarily owns this section:
 
 ``` text
 Problem / Bug
@@ -158,11 +158,11 @@ A feature is complete only when we have personally run and verified it.
 
 # 4. Branch Safety
 
-Massi develops on:
+Member 1 develops on:
 
 `dev`
 
-Do not implement Massi's unfinished work directly on `main`.
+Do not implement Member 1's unfinished work directly on `main`.
 
 Before every work session:
 
@@ -173,7 +173,7 @@ git status
 ```
 
 Before starting a major new increment, also check whether `main`
-contains team changes that Massi needs.
+contains team changes that Member 1 needs.
 
 Do not merge blindly.
 
@@ -250,13 +250,13 @@ After every meaningful Bob task:
 Suggested names:
 
 ``` text
-massi_01_repository_plan.png
-massi_02_investigation_engine.png
-massi_03_investigation_review.png
-massi_04_validation_engine.png
-massi_05_integration_debugging.png
-massi_06_final_code_review.png
-massi_07_final_readiness.png
+team_member1_01_repository_plan.png
+team_member1_02_investigation_engine.png
+team_member1_03_investigation_review.png
+team_member1_04_validation_engine.png
+team_member1_05_integration_debugging.png
+team_member1_06_final_code_review.png
+team_member1_07_final_readiness.png
 ```
 
 Do this during development, not at the last minute.
@@ -271,7 +271,7 @@ Do this during development, not at the last minute.
 
 ### Goal
 
-Make sure Massi is isolated on `dev` and can work safely.
+Make sure Member 1 is isolated on `dev` and can work safely.
 
 ### Checklist
 
@@ -280,7 +280,7 @@ Make sure Massi is isolated on `dev` and can work safely.
 -   [ ] `git status`
 -   [ ] working tree is clean before implementation
 -   [ ] master execution plan exists locally
--   [ ] this Massi execution plan exists locally
+-   [ ] this Member 1 execution plan exists locally
 -   [ ] backend directories exist
 -   [ ] tests directory exists
 -   [ ] `bob_sessions/member1/` exists
@@ -290,7 +290,7 @@ Make sure Massi is isolated on `dev` and can work safely.
 
 ### Exit condition
 
-Massi can modify `dev` without touching stable `main`.
+Member 1 can modify `dev` without touching stable `main`.
 
 ------------------------------------------------------------------------
 
@@ -298,7 +298,7 @@ Massi can modify `dev` without touching stable `main`.
 
 ### Goal
 
-Have Bob understand the real repository and Massi's exact
+Have Bob understand the real repository and Member 1's exact
 responsibilities before Bob writes code.
 
 ### Bob mode
@@ -308,7 +308,7 @@ responsibilities before Bob writes code.
 ### Bob reads
 
 -   `documentation/HACKATHON_EXECUTION_PLAN.md`
--   `documentation/PLAN_OF_EXECUTION_MASSI.md`
+-   `documentation/team_member1_plan_final.md`
 -   repository structure
 -   existing backend files
 -   existing tests
@@ -327,7 +327,7 @@ responsibilities before Bob writes code.
 
 ### Bob output expected
 
--   understanding of Massi's responsibilities
+-   understanding of Member 1's responsibilities
 -   dependency/interface map
 -   recommended implementation order
 -   risks/blockers
@@ -353,7 +353,7 @@ We agree on the first implementation increment.
 
 ### Goal
 
-Make Massi's backend runnable independently.
+Make Member 1's backend runnable independently.
 
 Expected initial pieces:
 
@@ -419,11 +419,11 @@ The backend starts reliably.
 
 ------------------------------------------------------------------------
 
-## PHASE 3 --- Freeze Massi's Schemas
+## PHASE 3 --- Freeze Member 1's Schemas
 
 ### Goal
 
-Create stable models so Massi can build independently of the frontend
+Create stable models so Member 1 can build independently of the frontend
 and analyzer.
 
 Core investigation contract:
@@ -495,7 +495,7 @@ major task on trivial Pydantic definitions.
 
 ### Goal
 
-Massi needs a predictable repository problem so the investigation engine
+Member 1 needs a predictable repository problem so the investigation engine
 can be completed without waiting for Member 2.
 
 Primary demo scenario:
@@ -548,7 +548,7 @@ Light review only. Save Bob budget for the real investigation engine.
 
 ### Goal
 
-Build Massi's main component:
+Build Member 1's main component:
 
 `backend/services/investigation.py`
 
@@ -591,9 +591,9 @@ This is one of the best places to spend Bobcoins.
 Workflow:
 
 1.  Bob Plan on this bounded component.
-2.  ChatGPT + Massi review Bob's proposed design.
+2.  ChatGPT + Member 1 review Bob's proposed design.
 3.  Bob Agent implements only approved files.
-4.  Massi inspects `git diff`.
+4.  Member 1 inspects `git diff`.
 5.  Run focused tests.
 6.  Give failures back to Bob only when repository-aware debugging is
     valuable.
@@ -872,7 +872,7 @@ Expose:
 
 ### Exit condition
 
-Massi's two APIs work independently:
+Member 1's two APIs work independently:
 
 ``` text
 POST /api/investigate
@@ -881,11 +881,11 @@ POST /api/validate
 
 ------------------------------------------------------------------------
 
-## PHASE 10 --- Massi Standalone End-to-End Test
+## PHASE 10 --- Member 1 Standalone End-to-End Test
 
 ### Goal
 
-Finish Massi's own work before depending on teammates.
+Finish Member 1's own work before depending on teammates.
 
 Use controlled/mock input where Member 2's `/api/analyze` output will
 eventually connect.
@@ -919,7 +919,7 @@ Real pass/fail result
 -   [ ] known bug flow works
 -   [ ] invalid input works safely
 -   [ ] unknown issue works safely
--   [ ] full Massi test suite passes
+-   [ ] full Member 1 test suite passes
 -   [ ] no dependency on frontend
 -   [ ] no dependency on unfinished analyzer
 -   [ ] no hardcoded machine-specific paths
@@ -930,17 +930,17 @@ Real pass/fail result
 
 At this point:
 
-**MASSI'S CORE BUILD IS FUNCTIONALLY COMPLETE.**
+**MEMBER 1'S CORE BUILD IS FUNCTIONALLY COMPLETE.**
 
 We can integrate teammates later without having waited for them.
 
 ------------------------------------------------------------------------
 
-## PHASE 11 --- Bob Task 04: Massi Code Review
+## PHASE 11 --- Bob Task 04: Member 1 Code Review
 
 ### Goal
 
-Have Bob inspect Massi's completed work as one coherent subsystem.
+Have Bob inspect Member 1's completed work as one coherent subsystem.
 
 Ask Bob to review for:
 
@@ -964,7 +964,7 @@ For each finding:
 ``` text
 Bob finding
  ↓
-Massi/ChatGPT verify
+Member 1/ChatGPT verify
  ↓
 Accept or reject
  ↓
@@ -987,13 +987,13 @@ Test
 
 ## PHASE 12 --- Wait-Free Integration Contract
 
-Massi can now provide teammates with stable interfaces.
+Member 1 can now provide teammates with stable interfaces.
 
 Member 2 eventually feeds a finding/issue into investigation.
 
-Member 3 calls Massi's APIs.
+Member 3 calls Member 1's APIs.
 
-Massi should communicate:
+Member 1 should communicate:
 
 ``` text
 POST /api/investigate
@@ -1005,7 +1005,7 @@ request schema
 response schema
 ```
 
-No teammate needs to understand Massi's internal implementation.
+No teammate needs to understand Member 1's internal implementation.
 
 This is why parallel development works.
 
@@ -1048,7 +1048,7 @@ Frontend
  ↓
 /api/investigate
  ↓
-Massi engine
+Member 1 engine
  ↓
 Frontend result
 
@@ -1056,7 +1056,7 @@ Frontend
  ↓
 /api/validate
  ↓
-Massi validation
+Member 1 validation
  ↓
 Frontend result
 ```
@@ -1072,7 +1072,7 @@ Frontend result
 -   [ ] confidence display if used
 -   [ ] validation result display
 
-Massi fixes backend integration problems; Member 3 owns UI
+Member 1 fixes backend integration problems; Member 3 owns UI
 implementation.
 
 ------------------------------------------------------------------------
@@ -1130,7 +1130,7 @@ Ask Bob to inspect:
 -   tests
 -   sample repository
 -   master plan
--   Massi plan
+-   Member 1 plan
 
 Focus on:
 
@@ -1247,7 +1247,7 @@ From a clean copy:
 
 Before submission:
 
--   [ ] all meaningful Massi Bob sessions captured
+-   [ ] all meaningful Member 1 Bob sessions captured
 -   [ ] Member 2 screenshots present
 -   [ ] Member 3 screenshots present
 -   [ ] filenames understandable
@@ -1306,9 +1306,9 @@ architectural rewrites.
 
 ------------------------------------------------------------------------
 
-# 7. Massi Completion Definition
+# 7. Member 1 Completion Definition
 
-Massi's personal implementation is complete when all of these are true:
+Member 1's personal implementation is complete when all of these are true:
 
 -   [ ] backend starts reliably
 -   [ ] `/health` works
@@ -1330,7 +1330,7 @@ Massi's personal implementation is complete when all of these are true:
 -   [ ] Bob evidence saved
 -   [ ] work is committed safely on `dev`
 
-Massi does **not** need the frontend or analyzer finished to reach this
+Member 1 does **not** need the frontend or analyzer finished to reach this
 milestone.
 
 ------------------------------------------------------------------------
@@ -1340,7 +1340,7 @@ milestone.
 Always prioritize:
 
 ``` text
-1. Working Massi investigation engine
+1. Working Member 1 investigation engine
 2. Working validation engine
 3. Correct APIs
 4. Tests
@@ -1394,7 +1394,7 @@ Instead scope every AI task with:
 
 # 10. Current Checkpoint
 
-At the start of Massi's execution:
+At the start of Member 1's execution:
 
 ``` text
 Project concept: FROZEN
@@ -1403,8 +1403,8 @@ Team responsibilities: DEFINED
 Bob: INSTALLED
 Bob budget: 40 Bobcoins initially
 Repository: CREATED
-Massi working branch: dev
-Massi implementation: READY TO START
+Member 1 working branch: dev
+Member 1 implementation: READY TO START
 ```
 
 ## Immediate next action
@@ -1429,7 +1429,7 @@ First:
 
 # 11. Final Principle
 
-Massi's workflow is:
+Member 1's workflow is:
 
 ``` text
 INDEPENDENT CORE BUILD
@@ -1438,7 +1438,7 @@ INVESTIGATION WORKS
         ↓
 VALIDATION WORKS
         ↓
-MASSI STANDALONE TEST
+MEMBER 1 STANDALONE TEST
         ↓
 BOB REVIEW
         ↓
@@ -1461,5 +1461,5 @@ We do not break stable code to chase features.
 
 We do not let AI silently redesign the project.
 
-We build one verified layer at a time until Massi's subsystem is
+We build one verified layer at a time until Member 1's subsystem is
 complete.

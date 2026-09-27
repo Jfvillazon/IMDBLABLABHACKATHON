@@ -4,7 +4,7 @@ POST /api/investigate — HTTP layer for the Investigation Engine.
 Design decisions:
   - repository_path is NOT a user-supplied parameter.
     The approved API contract (HACKATHON_EXECUTION_PLAN.md §22 and
-    massiplanvF Phase 6) only shows {"issue": ...} in the request body.
+    team_member1_plan_final.md Phase 6) only shows {"issue": ...} in the request body.
     The InvestigateRequest schema also contains only `issue`.
     The endpoint therefore resolves the repository path internally,
     defaulting to the project-relative `sample_repo/` directory.

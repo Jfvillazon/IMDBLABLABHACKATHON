@@ -145,30 +145,30 @@ RepoMedic was **built with IBM Bob 2.0** as a core AI-assisted software-engineer
 
 All session screenshots are stored under [`bob_sessions/`](bob_sessions/).
 
-**Member 1 (Massi) — Core Backend, Investigation Engine, Integration**
+**Member 1 — Core Backend, Investigation Engine, Integration**
 Eleven session screenshots covering:
 
 | Session | Task |
 |---|---|
-| `massi_01_repository_plan.png` | Repository planning and project architecture |
-| `massi_02_backend_foundation.png` | Backend foundation (FastAPI app, lifespan, routers) |
-| `massi_03_api_schemas.png` | API schema and contract development |
-| `massi_04_investigation_engine.png` | Investigation engine development |
-| `massi_05_investigate_api.png` | `/api/investigate` endpoint development |
-| `massi_06_validation_engine.png` | Validation engine development |
-| `massi_07_regression_test_workflow.png` | Regression-test recommendation workflow |
-| `massi_08_engineering_report.png` | Engineering report pipeline |
-| `massi_09_backend_workflow.png` | Backend workflow orchestration |
-| `massi_10_backend_integration.png` | Backend integration |
-| `massi_14_final_security_review.png` | Final security and hackathon-readiness review |
+| `team_member1_01_repository_plan.png` | Repository planning and project architecture |
+| `team_member1_02_backend_foundation.png` | Backend foundation (FastAPI app, lifespan, routers) |
+| `team_member1_03_api_schemas.png` | API schema and contract development |
+| `team_member1_04_investigation_engine.png` | Investigation engine development |
+| `team_member1_05_investigate_api.png` | `/api/investigate` endpoint development |
+| `team_member1_06_validation_engine.png` | Validation engine development |
+| `team_member1_07_regression_test_workflow.png` | Regression-test recommendation workflow |
+| `team_member1_08_engineering_report.png` | Engineering report pipeline |
+| `team_member1_09_backend_workflow.png` | Backend workflow orchestration |
+| `team_member1_10_backend_integration.png` | Backend integration |
+| `team_member1_14_final_security_review.png` | Final security and hackathon-readiness review |
 
-**Member 2 (Juan) — Repository Analysis Engine**
+**Member 2 — Repository Analysis Engine**
 Two session screenshots covering:
 
 | Session | Task |
 |---|---|
-| `Juan_task01_merge_analysis_summary.png` | Repository analysis merge and summary |
-| `Juan_task01_test_results.png` | Analysis engine test results |
+| `team_member2_task01_merge_analysis_summary.png` | Repository analysis merge and summary |
+| `team_member2_task01_test_results.png` | Analysis engine test results |
 
 **Member 3 — Frontend / UX**
 Ten session screenshots covering phases 1–7 of the frontend workflow, plus engineering summary and validation result evidence:
@@ -368,7 +368,7 @@ RepoMedic/
 ├── tests/                       # 470-test project suite
 ├── sample_repo/                 # Controlled synthetic demo repository
 ├── bob_sessions/                # IBM Bob session screenshots (evidence)
-│   ├── member1(Massi)/          # 11 sessions
+│   ├── member1(Member 1)/          # 11 sessions
 │   ├── member2/                 # 2 sessions
 │   └── member3/                 # 9 sessions
 └── documentation/               # Execution plan, ingestion contract, demo notes
@@ -380,8 +380,8 @@ RepoMedic/
 
 | Member | Role | Key Deliverables |
 |---|---|---|
-| **Member 1 (Massi)** | Core Backend · AI-Assisted Debugging Engine · Technical Lead · Integration | Investigation engine · Root-cause analysis workflow · Relevant-file identification · Repair recommendation · Regression-test workflow · Validation engine · `/api/investigate` and `/api/validate` · Engineering report pipeline · Backend integration · Final system integration and technical verification |
-| **Member 2 (Juan)** | Repository Analysis Engine | Static analysis engine · Findings system · Repository health scoring · Analyzer testing and integration |
+| **Member 1** | Core Backend · AI-Assisted Debugging Engine · Technical Lead · Integration | Investigation engine · Root-cause analysis workflow · Relevant-file identification · Repair recommendation · Regression-test workflow · Validation engine · `/api/investigate` and `/api/validate` · Engineering report pipeline · Backend integration · Final system integration and technical verification |
+| **Member 2** | Repository Analysis Engine | Static analysis engine · Findings system · Repository health scoring · Analyzer testing and integration |
 | **Member 3** | Frontend / UX | React/Vite frontend · All six application views (Connect, Overview, Findings, Investigation, Validation, Report) · API client · User-facing repository workflow |
 
 ---
@@ -404,9 +404,9 @@ RepoMedic is a hackathon prototype. The following limitations are intentional an
 
 IBM Bob session screenshots are stored in [`bob_sessions/`](bob_sessions/) organized by team member:
 
-- [`bob_sessions/member1(Massi)/`](bob_sessions/member1(Massi)/) — 11 screenshots (planning through final security review)
-- [`bob_sessions/member2/`](bob_sessions/member2/) — 2 screenshots (analysis engine integration)
-- [`bob_sessions/member3/`](bob_sessions/member3/) — 10 screenshots (frontend phases 1–7, validation result, engineering summary)
+- [`bob_sessions/member1(Member 1)/`](bob_sessions/member1(Member 1)/) — 11 screenshots (planning through final security review)
+- [`bob_sessions/team_member2/`](bob_sessions/team_member2/) — 2 screenshots (analysis engine integration)
+- [`bob_sessions/team_member3/`](bob_sessions/team_member3/) — 10 screenshots (frontend phases 1–7, validation result, engineering summary)
 
 Judges are invited to browse these directories directly in the repository.
 

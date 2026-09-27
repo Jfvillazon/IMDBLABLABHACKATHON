@@ -3,7 +3,7 @@ POST /api/validate — HTTP layer for the Validation Engine.
 
 Design decisions:
   - No request body is required.
-    The approved contract (massiplanvF Phase 9, schemas.py ValidateResponse)
+    The approved contract (team_member1_plan_final.md Phase 9, schemas.py ValidateResponse)
     defines no user-supplied parameters for validation — the test target
     is resolved server-side, matching the same pattern as /api/investigate.
     This prevents arbitrary filesystem execution through the public API.
