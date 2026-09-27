@@ -8,7 +8,7 @@ from __future__ import annotations
 import logging
 import os
 from pathlib import Path
-from typing import Literal
+from typing import Literal, Optional
 
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
@@ -26,7 +26,7 @@ class FindingResponse(BaseModel):
     severity: Literal["high", "medium", "low"]
     title: str
     file: str
-    line: int | None
+    line: Optional[int]
     description: str
     recommendation: str
 
