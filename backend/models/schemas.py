@@ -7,19 +7,37 @@ Approved contract (massiplanvF, confirmed Increment 2):
   - InvestigateResponse.confidence     : float  (0.0 – 1.0)
       Numeric confidence score for the investigation result.
 
-Note: HACKATHON_EXECUTION_PLAN.md section 22 shows different types for
-these two fields (bool / str).  That document will be synchronised
-separately.  The massiplanvF contract is authoritative for this
-increment.
+Member 2 contract (dev-2, InvestigationResponse):
+  - Extra fields are forbidden.
+  - confidence rejects NaN and ±Inf.
+  - test_generated must be a non-empty string.
 """
 
 from typing import List, Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 # ---------------------------------------------------------------------------
-# Investigation
+# Investigation (Member 2 — strict schema for test_investigation_schema.py)
+# ---------------------------------------------------------------------------
+
+
+class InvestigationResponse(BaseModel):
+    """Approved JSON response for POST /api/investigate — strict Member 2 contract."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    issue: str = Field(min_length=1)
+    relevant_files: list[str]
+    root_cause: str = Field(min_length=1)
+    suggested_fix: str = Field(min_length=1)
+    test_generated: str = Field(min_length=1)
+    confidence: float = Field(ge=0.0, le=1.0, allow_inf_nan=False)
+
+
+# ---------------------------------------------------------------------------
+# Investigation (Member 1 — used by investigate API and services)
 # ---------------------------------------------------------------------------
 
 

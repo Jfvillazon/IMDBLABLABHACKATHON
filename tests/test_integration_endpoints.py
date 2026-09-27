@@ -150,7 +150,16 @@ def test_validate_endpoint_reachable() -> None:
 
 def test_all_four_routes_registered() -> None:
     """Confirm the live routing table contains all four required paths."""
-    paths = {route.path for route in app.routes if hasattr(route, "path")}
+    def _collect_paths(routes):
+        for r in routes:
+            if hasattr(r, "path") and r.path:
+                yield r.path
+            # FastAPI >= 0.100 wraps included routers as _IncludedRouter;
+            # their routes live on original_router.routes.
+            if hasattr(r, "original_router"):
+                yield from _collect_paths(r.original_router.routes)
+
+    paths = set(_collect_paths(app.routes))
     assert "/health" in paths
     assert "/api/analyze" in paths
     assert "/api/investigate" in paths
