@@ -1024,3 +1024,83 @@ class TestRegressionTestRecommendationWorkflow:
             r1 = _build_regression_test_recommendation(category, "some issue text")
             r2 = _build_regression_test_recommendation(category, "some issue text")
             assert r1 == r2, f"Non-deterministic for category={category!r}"
+
+
+# Selected finding prose and its location must not compete for diagnosis.
+_CREDENTIAL_ISSUE = (
+    "Potential hardcoded credential\n\n"
+    "A credential-like variable appears to contain a string literal."
+)
+
+
+def _assert_credential_guidance(result):
+    diagnosis = result.root_cause.lower()
+    repair = result.suggested_fix.lower()
+    prevention = result.test_generated.lower()
+    assert "credential" in diagnosis or "secret" in diagnosis
+    assert "source code" in diagnosis and "hardcoded" in diagnosis
+    assert "remove" in repair and "environment" in repair
+    assert "secrets manager" in repair and "rotate" in repair
+    assert "secret-detection" in prevention and "configuration" in prevention
+    for text in (diagnosis, repair, prevention):
+        assert "quantity" not in text
+        assert "login" not in text
+        assert "authentication" not in text
+
+
+def test_exact_f001_investigation_payload(tmp_path):
+    (tmp_path / "checkout.py").write_text('API_KEY = "dummy-test-value"\n')
+    issue = _CREDENTIAL_ISSUE + "\n\nFile: checkout.py:7"
+    result = investigate_issue(issue, str(tmp_path))
+    _assert_credential_guidance(result)
+    assert result.issue == issue
+    assert result.relevant_files[0] == "checkout.py"
+
+
+@pytest.mark.parametrize("filename", ["checkout.py", "auth.py", "payment.py"])
+def test_credential_diagnosis_is_independent_of_filename(tmp_path, filename):
+    for name in ("checkout.py", "auth.py", "payment.py"):
+        (tmp_path / name).write_text('API_KEY = "dummy-test-value"\n')
+    result = investigate_issue(_CREDENTIAL_ISSUE + f"\n\nFile: {filename}:7", str(tmp_path))
+    _assert_credential_guidance(result)
+    assert result.relevant_files[0] == filename
+
+
+@pytest.mark.parametrize("filename", ["checkout.py", "auth.py", "payment.py"])
+@pytest.mark.parametrize("reference", ["{file}", "File: {file}:7", "Location: src/{file}:7:2", "Observed in `{file}`."])
+def test_location_does_not_select_diagnosis(tmp_path, filename, reference):
+    (tmp_path / filename).write_text("# unrelated source\n")
+    for issue in (reference.format(file=filename), "Rendering flickers.\n\n" + reference.format(file=filename)):
+        result = investigate_issue(issue, str(tmp_path))
+        assert "No deterministic root cause" in result.root_cause
+        assert result.confidence < 0.5
+        assert filename in result.relevant_files
+
+
+@pytest.mark.parametrize("issue", [
+    "Checkout fails when quantity is None.",
+    "Missing quantity crashes checkout.",
+    "Quantity is missing.",
+    "Checkout calculation failure.",
+])
+def test_quantity_symptoms_still_select_checkout(tmp_path, issue):
+    (tmp_path / "checkout.py").write_text("total = quantity * price\n")
+    result = investigate_issue(issue + "\n\nFile: auth.py:7", str(tmp_path))
+    assert "quantity" in result.root_cause.lower()
+    assert "quantity" in result.test_generated.lower()
+    assert result.confidence > 0.5
+
+
+def test_checkout_domain_without_quantity_evidence_falls_back(tmp_path):
+    (tmp_path / "checkout.py").write_text("# checkout\n")
+    result = investigate_issue("Checkout rendering flickers.", str(tmp_path))
+    assert "No deterministic root cause" in result.root_cause
+    assert result.confidence < 0.5
+
+
+def test_authentication_symptoms_survive_checkout_location(tmp_path):
+    (tmp_path / "checkout.py").write_text("# authentication\n")
+    result = investigate_issue("Login rejects valid credentials.\n\nFile: checkout.py:7", str(tmp_path))
+    assert "Authentication" in result.root_cause
+    assert "quantity" not in result.root_cause.lower()
+    assert "login" in result.test_generated.lower()

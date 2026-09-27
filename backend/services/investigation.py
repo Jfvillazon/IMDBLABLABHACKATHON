@@ -10,7 +10,7 @@ Algorithm:
   3. Score each file for relevance to the issue using deterministic keyword signals.
   4. Select up to 3 highest-scoring files as relevant_files.
   5. Match the issue against a small rule table to find a known investigation category.
-x  6. Produce root_cause, suggested_fix, and confidence from the match.
+  6. Produce root_cause, suggested_fix, and confidence from the match.
   7. Build a concrete regression-test recommendation via
      _build_regression_test_recommendation().
   8. Fall back gracefully when no strong rule matches.
@@ -78,12 +78,27 @@ LOW_CONFIDENCE = 0.25
 _Rule = Tuple[List[str], List[str], str, str, str]
 
 _RULES: List[_Rule] = [
+    # Specific embedded-secret evidence takes precedence over domain words.
+    (
+        ["credential", "credentials", "secret", "secrets", "password", "token", "key"],
+        ["credential", "secret", "password", "token", "key"],
+        (
+            "A credential or secret appears to be embedded in source code as a "
+            "hardcoded value, potentially exposing it to anyone with source access."
+        ),
+        (
+            "Remove the hardcoded secret from source code and load it from "
+            "environment configuration or a secrets manager. Rotate the credential "
+            "if it is real or has been exposed."
+        ),
+        "hardcoded_credential",
+    ),
     # -----------------------------------------------------------------------
     # Rule 1 — Missing / unvalidated quantity in checkout
     # -----------------------------------------------------------------------
     (
-        # trigger: issue must mention checkout-family words
-        ["checkout", "cart", "order", "purchase"],
+        # Quantity symptoms or explicit checkout calculation failures are required.
+        ["checkout", "cart", "order", "purchase", "quantity", "qty"],
         ["quantity", "qty", "amount", "checkout", "cart", "order"],
         (
             "The quantity input is used before being validated. "
@@ -174,6 +189,13 @@ _RULES: List[_Rule] = [
 #   (2) what input / edge case should trigger the test, and
 #   (3) what expected outcome should be asserted.
 _CATEGORY_RECOMMENDATIONS: dict = {
+    "hardcoded_credential": (
+        "Add a secret-detection check that flags embedded credentials in source "
+        "without printing their values. Add a configuration test using a dummy "
+        "secret supplied through environment configuration or a secrets manager; "
+        "assert that it is loaded correctly and that absent configuration fails "
+        "safely without falling back to a hardcoded secret."
+    ),
     "checkout": (
         "Add a regression test that calls the checkout function (or endpoint) "
         "with quantity=None and with quantity omitted entirely. "
@@ -269,6 +291,23 @@ def _tokenize(text: str) -> List[str]:
     return re.findall(r"[a-z0-9]+", text.lower())
 
 
+# Strip file references only for diagnosis, retaining the full issue for ranking.
+# Handles bare, quoted, inline, and path-qualified references with line/column suffixes.
+_FILE_REFERENCE = re.compile(
+    r"(?<![\w.])(?:[\w.-]+[/\\])*[\w.-]+\."
+    r"(?:py|js|jsx|ts|tsx|json|ya?ml|toml|ini|cfg|md|txt)"
+    r"(?::\d+(?::\d+)?)?(?![\w.])",
+    re.IGNORECASE,
+)
+
+
+def _diagnostic_keywords(issue: str) -> List[str]:
+    """Location labels and filenames are context, not symptoms."""
+    narrative = _FILE_REFERENCE.sub(" ", issue)
+    narrative = re.sub(r"(?im)^\s*(?:file|files|path|location)\s*:", " ", narrative)
+    return _issue_keywords(narrative)
+
+
 def _issue_keywords(issue: str) -> List[str]:
     """Extract meaningful words from the issue string."""
     stop = {
@@ -355,14 +394,40 @@ def _rank_files(
 
 def _match_rule(issue_words: List[str]) -> Optional[_Rule]:
     """
-    Return the first rule whose trigger keywords overlap with *issue_words*.
+    Return the first matching rule with its required symptom evidence.
     Returns None when no rule matches.
     """
     issue_word_set = set(issue_words)
     for rule in _RULES:
         triggers, *_ = rule
-        if issue_word_set.intersection(triggers):
-            return rule
+        if not issue_word_set.intersection(triggers):
+            continue
+        category = rule[4]
+        if category == "hardcoded_credential":
+            embedded = (
+                bool(issue_word_set.intersection({"hardcoded", "embedded"}))
+                or {"hard", "coded"}.issubset(issue_word_set)
+                or {"string", "literal"}.issubset(issue_word_set)
+            )
+            if not embedded:
+                continue
+        if category == "checkout":
+            quantity_problem = (
+                bool(issue_word_set.intersection({"quantity", "qty"}))
+                and bool(issue_word_set.intersection({
+                    "missing", "none", "null", "absent", "invalid", "validate",
+                    "validation", "unvalidated", "without", "provided", "omitted",
+                    "fail", "fails", "failure", "crash", "crashes", "breaks",
+                }))
+            )
+            calculation_failure = (
+                bool(issue_word_set.intersection({"checkout", "cart", "order", "purchase"}))
+                and bool(issue_word_set.intersection({"calculation", "calculations", "total"}))
+                and bool(issue_word_set.intersection({"fail", "fails", "failure", "crash", "crashes", "breaks"}))
+            )
+            if not (quantity_problem or calculation_failure):
+                continue
+        return rule
     return None
 
 
@@ -420,7 +485,7 @@ def investigate_issue(issue: str, repository_path: str) -> InvestigateResponse:
     # ------------------------------------------------------------------
     # Rule matching
     # ------------------------------------------------------------------
-    matched_rule = _match_rule(issue_words)
+    matched_rule = _match_rule(_diagnostic_keywords(issue))
     category_keywords: Optional[List[str]] = matched_rule[1] if matched_rule else None
 
     # ------------------------------------------------------------------
