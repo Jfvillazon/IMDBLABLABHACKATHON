@@ -30,12 +30,16 @@ from backend.models.schemas import EngineeringReport
 from backend.services.investigation import investigate_issue
 from backend.services.report import build_engineering_report
 from backend.services.validation import run_validation
+from backend.models.repositories import ValidationResult
+from typing import Optional
 
 
 def run_engineering_workflow(
     issue: str,
     repository_path: str,
     test_path: str | None = None,
+    *,
+    validation_override: Optional[ValidationResult] = None,
 ) -> EngineeringReport:
     """
     Orchestrate the full investigation → validation → engineering-report pipeline.
@@ -82,7 +86,8 @@ def run_engineering_workflow(
     # run_validation never raises — returns status="error" on problems.
     # ------------------------------------------------------------------
     resolved_test_path = test_path if test_path is not None else repository_path
-    validation = run_validation(resolved_test_path)
+    # Internal policy result only; never accepted from an HTTP request.
+    validation = validation_override if validation_override is not None else run_validation(resolved_test_path)
 
     # ------------------------------------------------------------------
     # Step 3 — compose report

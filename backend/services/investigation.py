@@ -27,6 +27,8 @@ from pathlib import Path
 from typing import List, Optional, Tuple
 
 from backend.models.schemas import InvestigateResponse
+from backend.analyzers.repository import scan_repository
+from backend.analyzers.common import safe_source_lines
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -253,14 +255,8 @@ def _build_regression_test_recommendation(category: Optional[str], issue: str) -
 
 def _discover_source_files(root: Path) -> List[Path]:
     """Return all supported source files under *root*, skipping ignored dirs."""
-    found: List[Path] = []
-    for dirpath, dirnames, filenames in os.walk(root):
-        # Prune ignored directories in-place so os.walk skips them entirely.
-        dirnames[:] = [d for d in dirnames if d not in IGNORED_DIRS]
-        for filename in filenames:
-            if Path(filename).suffix in SUPPORTED_EXTENSIONS:
-                found.append(Path(dirpath) / filename)
-    return found
+    return [path for path in scan_repository(root)["files"]
+            if path.suffix.lower() in SUPPORTED_EXTENSIONS]
 
 
 # ---------------------------------------------------------------------------
@@ -308,10 +304,10 @@ def _score_file(
                 score += 2
 
     # Read file content for text-matching (skip on read errors).
-    try:
-        content = filepath.read_text(encoding="utf-8", errors="replace").lower()
-    except OSError:
+    lines = safe_source_lines(filepath)
+    if lines is None:
         return score
+    content = "\n".join(lines).lower()
 
     content_tokens = set(_tokenize(content))
 
@@ -403,10 +399,13 @@ def investigate_issue(issue: str, repository_path: str) -> InvestigateResponse:
         raise ValueError("Issue description must not be empty.")
 
     repo = Path(repository_path)
+    if repo.is_symlink():
+        raise ValueError("Repository root must not be a symbolic link.")
     if not repo.exists():
         raise ValueError(f"Repository path does not exist: {repository_path!r}")
     if not repo.is_dir():
         raise ValueError(f"Repository path is not a directory: {repository_path!r}")
+    repo = repo.resolve()
 
     # ------------------------------------------------------------------
     # File discovery

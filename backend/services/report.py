@@ -21,6 +21,7 @@ single deterministic EngineeringReport.  This function:
 from __future__ import annotations
 
 from backend.models.schemas import EngineeringReport, InvestigateResponse, ValidateResponse
+from backend.models.repositories import EngineeringReportV1, ValidationResult
 
 # ---------------------------------------------------------------------------
 # Outcome messages
@@ -61,6 +62,12 @@ def _build_outcome(status: str, tests_run: int, failed: int) -> str:
         return _OUTCOME_PASSED.format(tests_run=tests_run)
     if status == "failed":
         return _OUTCOME_FAILED.format(failed=failed, tests_run=tests_run)
+    if status == "not_run":
+        return (
+            "Validation was not run: imported repository code is untrusted. "
+            "No tests were executed, no repair was applied, and no test passage "
+            "or repair effectiveness has been established."
+        )
     # "error" (and any unexpected value treated conservatively)
     return _OUTCOME_ERROR
 
@@ -95,7 +102,9 @@ def build_engineering_report(
         failed=validation.failed,
     )
 
-    return EngineeringReport(
+    report_type = EngineeringReportV1 if isinstance(validation, ValidationResult) else EngineeringReport
+    extra = {"validation_reason": validation.reason} if isinstance(validation, ValidationResult) else {}
+    return report_type(
         issue=investigation.issue,
         relevant_files=list(investigation.relevant_files),
         root_cause=investigation.root_cause,
@@ -107,4 +116,5 @@ def build_engineering_report(
         failed=validation.failed,
         validation_status=validation.status,
         outcome=outcome,
+        **extra,
     )
