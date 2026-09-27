@@ -1,10 +1,14 @@
-"""Entry point for a synthetic, intentionally flawed checkout demo.
+"""Run the offline shop with: python sample_repo/app.py."""
 
-This application is never imported or executed by RepoMedic's static scanner.
-"""
+from shop.catalog import find_product
+from shop.receipts import render_receipt
 
-from checkout import process_checkout
+
+def main():
+    product = find_product("notebook")
+    order = [{"name": product["name"], "price": product["price"], "quantity": 2}]
+    print(render_receipt(order))
 
 
 if __name__ == "__main__":
-    print(process_checkout({"price": 12.50, "quantity": 2}))
+    main()

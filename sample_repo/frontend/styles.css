@@ -1,0 +1,5 @@
+body { font-family: system-ui, sans-serif; background: #f3f5f8; color: #172338; }
+main { max-width: 36rem; margin: 4rem auto; padding: 2rem; background: white; }
+label { display: block; margin-bottom: .5rem; }
+input { font: inherit; padding: .5rem; width: 6rem; }
+output { font-weight: bold; }

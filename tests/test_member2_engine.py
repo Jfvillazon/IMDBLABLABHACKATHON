@@ -172,15 +172,21 @@ def test_controlled_demo_contains_expected_static_findings() -> None:
     project_root = Path(__file__).resolve().parents[1]
     sample = project_root / "sample_repo"
     result = analyze_repository(sample)
-    assert result["files_analyzed"] == 3
-    assert result["languages"] == ["JavaScript", "Python"]
-    assert {f["category"] for f in result["findings"]} >= {
-        "security", "testing", "error_handling", "documentation",
-    }
+    assert result["files_analyzed"] == 16
+    assert result["languages"] == ["CSS", "HTML", "JavaScript", "Python"]
+    assert result["health_score"] == 73
+    assert [(f["id"], f["title"], f["category"], f["severity"], f["file"])
+            for f in result["findings"]] == [
+        ("F001", "Potential hardcoded credential", "security", "high", "shop/config.py"),
+        ("F002", "Broad exception handler", "error_handling", "medium", "shop/catalog.py"),
+        ("F003", "Bare except clause", "error_handling", "medium", "shop/importer.py"),
+        ("F004", "Broad exception handler", "error_handling", "medium", "shop/receipts.py"),
+        ("F005", "Long function", "maintainability", "low", "shop/reporting.py"),
+    ]
     assert "FAKE_DEMO_KEY_NOT_REAL" not in json.dumps(result)
     structure = inspect_repository_structure(sample)
     assert structure["entry_points"] == ["app.py"]
-    assert structure["top_level_directories"] == ["frontend"]
+    assert structure["top_level_directories"] == ["frontend", "shop", "tests"]
 
 
 def test_member2_preview_has_exactly_one_analyze_route(

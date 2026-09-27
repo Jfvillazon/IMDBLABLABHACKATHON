@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>RepoMedic Demo Shop</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="cart.js" defer></script>
+  </head>
+  <body>
+    <main>
+      <h1>RepoMedic Demo Shop</h1>
+      <p>Offline order preview. No payment is processed.</p>
+      <label for="quantity">Notebooks ($12.50 each)</label>
+      <input id="quantity" type="number" min="0" step="1" value="2">
+      <p>Total: <output id="total" for="quantity" aria-live="polite">$25.00</output></p>
+      <small>This browser preview is independent of the Python checkout demo.</small>
+    </main>
+  </body>
+</html>
