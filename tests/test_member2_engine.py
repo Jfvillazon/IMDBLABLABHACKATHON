@@ -201,3 +201,39 @@ def test_member2_preview_has_exactly_one_analyze_route(
 
     response = TestClient(app).post("/api/analyze")
     assert response.status_code == 200, response.text
+
+
+def test_analyze_route_works_through_main_app(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
+) -> None:
+    """POST /api/analyze is registered exactly once in the real FastAPI app
+    and returns the approved five-field contract."""
+    (tmp_path / "README.md").write_text("setup docs", encoding="utf-8")
+    (tmp_path / "app.py").write_text("print('hello')\n", encoding="utf-8")
+    monkeypatch.setenv("REPOMEDIC_SAMPLE_REPO", str(tmp_path))
+
+    from backend.main import app as main_app
+
+    client = TestClient(main_app)
+    response = client.post("/api/analyze")
+    assert response.status_code == 200, response.text
+    body = response.json()
+    assert set(body) == {"repository", "files_analyzed", "languages", "health_score", "findings"}
+    assert body["files_analyzed"] == 1
+    assert body["repository"] == tmp_path.name
+    # Endpoint must be read-only — a body with a "path" field is silently ignored
+    response2 = client.post("/api/analyze", json={"path": "/etc"})
+    assert response2.status_code == 200
+    assert response2.json()["repository"] == tmp_path.name
+        
+    def count_analyze_routes(routes):
+        count = 0
+        for route in routes:
+            if getattr(route, "path", None) == "/api/analyze":
+                count += 1
+            original_router = getattr(route, "original_router", None)
+            if original_router is not None:
+                count += count_analyze_routes(original_router.routes)
+        return count
+
+    assert count_analyze_routes(main_app.routes) == 1
