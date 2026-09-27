@@ -1460,4 +1460,1192 @@ body {
     min-width: 140px;
     justify-content: center;
   }
+  
+  
+}
+/* =========================================================
+   REPOMEDIC — PREMIUM REPOSITORY SELECTOR
+   ========================================================= */
+
+.repository-selector {
+  position: relative;
+  overflow: hidden;
+  margin: 32px 0 44px;
+  padding: 42px;
+  border: 1px solid rgba(99, 102, 241, 0.18);
+  border-radius: 24px;
+
+  background:
+    radial-gradient(
+      circle at 0% 0%,
+      rgba(59, 130, 246, 0.12),
+      transparent 35%
+    ),
+    radial-gradient(
+      circle at 100% 100%,
+      rgba(139, 92, 246, 0.12),
+      transparent 35%
+    ),
+    rgba(255, 255, 255, 0.92);
+
+  box-shadow:
+    0 20px 60px rgba(15, 23, 42, 0.08),
+    0 4px 16px rgba(59, 130, 246, 0.06);
+
+  backdrop-filter: blur(20px);
+
+  animation: repoCardEnter 0.65s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+
+/* Animated top accent */
+
+.repository-selector::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 8%;
+  right: 8%;
+  height: 3px;
+
+  background: linear-gradient(
+    90deg,
+    transparent,
+    #2563eb,
+    #7c3aed,
+    #06b6d4,
+    transparent
+  );
+
+  background-size: 200% 100%;
+
+  animation: repoGradientMove 4s linear infinite;
+}
+
+
+/* Floating glow */
+
+.repository-selector::after {
+  content: "";
+  position: absolute;
+
+  width: 260px;
+  height: 260px;
+
+  right: -120px;
+  top: -120px;
+
+  border-radius: 50%;
+
+  background: radial-gradient(
+    circle,
+    rgba(124, 58, 237, 0.12),
+    transparent 70%
+  );
+
+  pointer-events: none;
+
+  animation: repoGlowFloat 7s ease-in-out infinite;
+}
+
+
+/* =========================================================
+   Header
+   ========================================================= */
+
+.repository-selector__header {
+  position: relative;
+  z-index: 1;
+  margin-bottom: 30px;
+}
+
+.repository-selector__eyebrow {
+  display: inline-flex;
+  align-items: center;
+
+  margin-bottom: 12px;
+  padding: 6px 11px;
+
+  border: 1px solid rgba(37, 99, 235, 0.15);
+  border-radius: 999px;
+
+  background: rgba(239, 246, 255, 0.9);
+
+  color: #2563eb;
+
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.06);
+}
+
+.repository-selector__eyebrow::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+
+  margin-right: 8px;
+
+  border-radius: 50%;
+
+  background: #22c55e;
+
+  box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.12);
+
+  animation: repoPulse 2s ease-in-out infinite;
+}
+
+
+.repository-selector__header h2 {
+  margin: 0 0 10px;
+
+  font-size: clamp(28px, 4vw, 36px);
+  font-weight: 800;
+  letter-spacing: -0.035em;
+
+  color: #0f172a;
+}
+
+
+.repository-selector__header p {
+  margin: 0;
+
+  max-width: 760px;
+
+  color: #64748b;
+
+  font-size: 15px;
+  line-height: 1.7;
+}
+
+
+/* =========================================================
+   Tabs
+   ========================================================= */
+
+.repository-selector__tabs {
+  position: relative;
+  z-index: 1;
+
+  display: inline-flex;
+
+  gap: 5px;
+
+  margin-bottom: 28px;
+  padding: 6px;
+
+  border: 1px solid rgba(148, 163, 184, 0.15);
+  border-radius: 14px;
+
+  background: rgba(241, 245, 249, 0.8);
+
+  box-shadow:
+    inset 0 1px 2px rgba(15, 23, 42, 0.04),
+    0 4px 12px rgba(15, 23, 42, 0.03);
+}
+
+
+.repository-selector__tab {
+  position: relative;
+
+  border: 0;
+  border-radius: 10px;
+
+  padding: 12px 18px;
+
+  background: transparent;
+
+  color: #64748b;
+
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+
+  cursor: pointer;
+
+  transition:
+    transform 0.2s ease,
+    color 0.2s ease,
+    background 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+
+.repository-selector__tab:hover:not(:disabled) {
+  color: #2563eb;
+  transform: translateY(-1px);
+}
+
+
+.repository-selector__tab--active {
+  background: linear-gradient(
+    135deg,
+    #ffffff,
+    #f8faff
+  );
+
+  color: #1d4ed8;
+
+  box-shadow:
+    0 6px 18px rgba(15, 23, 42, 0.08),
+    0 0 0 1px rgba(37, 99, 235, 0.08);
+}
+
+
+.repository-selector__tab:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+
+.repository-selector__coming-soon {
+  margin-left: 8px;
+  padding: 3px 7px;
+
+  border-radius: 999px;
+
+  background: linear-gradient(
+    135deg,
+    #ede9fe,
+    #dbeafe
+  );
+
+  color: #6366f1;
+
+  font-size: 9px;
+  font-weight: 800;
+
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+
+/* =========================================================
+   Form
+   ========================================================= */
+
+.repository-selector__form {
+  position: relative;
+  z-index: 1;
+}
+
+
+.repository-selector__form label {
+  display: block;
+
+  margin-bottom: 9px;
+
+  color: #334155;
+
+  font-size: 13px;
+  font-weight: 700;
+}
+
+
+.repository-selector__input-row {
+  display: flex;
+  align-items: stretch;
+
+  gap: 12px;
+}
+
+
+.repository-selector__input-row input {
+  flex: 1;
+  min-width: 0;
+
+  padding: 15px 17px;
+
+  border: 1px solid #dbe2ea;
+  border-radius: 12px;
+
+  outline: none;
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.98),
+      rgba(248, 250, 252, 0.98)
+    );
+
+  color: #0f172a;
+
+  font: inherit;
+  font-size: 14px;
+
+  box-shadow:
+    inset 0 1px 2px rgba(15, 23, 42, 0.03),
+    0 3px 10px rgba(15, 23, 42, 0.03);
+
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
+}
+
+
+.repository-selector__input-row input:hover {
+  border-color: #b9c5d6;
+}
+
+
+.repository-selector__input-row input:focus {
+  border-color: #6366f1;
+
+  box-shadow:
+    0 0 0 4px rgba(99, 102, 241, 0.11),
+    0 8px 24px rgba(99, 102, 241, 0.08);
+
+  transform: translateY(-1px);
+}
+
+
+.repository-selector__input-row input::placeholder {
+  color: #a3afc2;
+}
+
+
+/* =========================================================
+   Primary Analyze Button
+   ========================================================= */
+
+.repository-selector__analyze {
+  position: relative;
+
+  overflow: hidden;
+
+  min-width: 205px;
+
+  padding: 14px 24px;
+
+  border: 0;
+  border-radius: 12px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #2563eb 0%,
+      #4f46e5 52%,
+      #7c3aed 100%
+    );
+
+  background-size: 180% 180%;
+
+  color: #ffffff;
+
+  font: inherit;
+  font-size: 14px;
+  font-weight: 800;
+
+  cursor: pointer;
+
+  box-shadow:
+    0 10px 24px rgba(79, 70, 229, 0.25),
+    0 3px 8px rgba(37, 99, 235, 0.15);
+
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    opacity 0.2s ease;
+
+  animation: repoButtonGradient 5s ease infinite;
+}
+
+
+.repository-selector__analyze::before {
+  content: "";
+
+  position: absolute;
+
+  top: -50%;
+  left: -80%;
+
+  width: 50%;
+  height: 200%;
+
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.35),
+    transparent
+  );
+
+  transform: rotate(20deg);
+
+  transition: left 0.6s ease;
+}
+
+
+.repository-selector__analyze:hover:not(:disabled)::before {
+  left: 140%;
+}
+
+
+.repository-selector__analyze:hover:not(:disabled) {
+  transform: translateY(-2px);
+
+  box-shadow:
+    0 15px 32px rgba(79, 70, 229, 0.32),
+    0 5px 12px rgba(37, 99, 235, 0.18);
+}
+
+
+.repository-selector__analyze:active:not(:disabled) {
+  transform: translateY(0) scale(0.98);
+}
+
+
+.repository-selector__analyze:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+
+  box-shadow: none;
+
+  animation: none;
+}
+
+
+/* =========================================================
+   Hint
+   ========================================================= */
+
+.repository-selector__hint {
+  display: block;
+
+  margin-top: 10px;
+
+  color: #94a3b8;
+
+  font-size: 12px;
+}
+
+
+/* =========================================================
+   Divider
+   ========================================================= */
+
+.repository-selector__divider {
+  position: relative;
+  z-index: 1;
+
+  display: flex;
+  align-items: center;
+
+  gap: 14px;
+
+  margin: 28px 0;
+
+  color: #94a3b8;
+
+  font-size: 10px;
+  font-weight: 800;
+
+  letter-spacing: 0.12em;
+}
+
+
+.repository-selector__divider::before,
+.repository-selector__divider::after {
+  content: "";
+
+  height: 1px;
+
+  flex: 1;
+
+  background: linear-gradient(
+    90deg,
+    transparent,
+    #dbe2ea,
+    transparent
+  );
+}
+
+
+/* =========================================================
+   Demo Button
+   ========================================================= */
+
+.repository-selector__demo {
+  position: relative;
+  z-index: 1;
+
+  width: 100%;
+
+  padding: 14px 20px;
+
+  border: 1px solid rgba(99, 102, 241, 0.18);
+  border-radius: 12px;
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(248, 250, 252, 0.95),
+      rgba(238, 242, 255, 0.85)
+    );
+
+  color: #475569;
+
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+
+  cursor: pointer;
+
+  box-shadow: 0 5px 16px rgba(15, 23, 42, 0.04);
+
+  transition:
+    transform 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+
+.repository-selector__demo:hover:not(:disabled) {
+  transform: translateY(-2px);
+
+  border-color: rgba(99, 102, 241, 0.4);
+
+  color: #4f46e5;
+
+  box-shadow:
+    0 10px 25px rgba(99, 102, 241, 0.1);
+}
+
+
+.repository-selector__demo:active:not(:disabled) {
+  transform: scale(0.99);
+}
+
+
+.repository-selector__demo:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+
+/* =========================================================
+   Features
+   ========================================================= */
+
+.repository-selector__features {
+  position: relative;
+  z-index: 1;
+
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+
+  gap: 10px;
+
+  margin-top: 26px;
+  padding-top: 24px;
+
+  border-top: 1px solid rgba(226, 232, 240, 0.9);
+}
+
+
+.repository-selector__features span {
+  padding: 7px 11px;
+
+  border: 1px solid rgba(34, 197, 94, 0.12);
+  border-radius: 999px;
+
+  background: rgba(240, 253, 244, 0.7);
+
+  color: #475569;
+
+  font-size: 11px;
+  font-weight: 700;
+
+  transition:
+    transform 0.2s ease,
+    background 0.2s ease,
+    color 0.2s ease;
+}
+
+
+.repository-selector__features span:hover {
+  transform: translateY(-2px);
+
+  background: #f0fdf4;
+
+  color: #15803d;
+}
+
+
+/* =========================================================
+   Animations
+   ========================================================= */
+
+@keyframes repoCardEnter {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.985);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+
+@keyframes repoGradientMove {
+  0% {
+    background-position: 0% 50%;
+  }
+
+  100% {
+    background-position: 200% 50%;
+  }
+}
+
+
+@keyframes repoGlowFloat {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+
+  50% {
+    transform: translate(-30px, 25px) scale(1.15);
+  }
+}
+
+
+@keyframes repoPulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.1);
+  }
+
+  50% {
+    box-shadow: 0 0 0 7px rgba(34, 197, 94, 0.04);
+  }
+}
+
+
+@keyframes repoButtonGradient {
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+
+/* =========================================================
+   Responsive
+   ========================================================= */
+
+@media (max-width: 700px) {
+  .repository-selector {
+    padding: 26px 20px;
+    border-radius: 18px;
+  }
+
+  .repository-selector__input-row {
+    flex-direction: column;
+  }
+
+  .repository-selector__analyze {
+    width: 100%;
+  }
+
+  .repository-selector__tabs {
+    display: flex;
+    width: 100%;
+  }
+
+  .repository-selector__tab {
+    flex: 1;
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+}
+
+
+/* Respect accessibility preference */
+
+@media (prefers-reduced-motion: reduce) {
+  .repository-selector,
+  .repository-selector::before,
+  .repository-selector::after,
+  .repository-selector__eyebrow::before,
+  .repository-selector__analyze {
+    animation: none;
+  }
+
+  .repository-selector *,
+  .repository-selector *::before,
+  .repository-selector *::after {
+    transition-duration: 0.01ms !important;
+  }
+}
+/* =========================================================
+   REPOMEDIC — PREMIUM RESULTS EXPERIENCE
+   ========================================================= */
+
+/* Smooth page behaviour */
+
+html {
+  scroll-behavior: smooth;
+}
+
+.page {
+  position: relative;
+}
+
+
+/* =========================================================
+   Hero
+   ========================================================= */
+
+.hero {
+  position: relative;
+  padding-top: 18px;
+  animation: dashboardFadeIn 0.5s ease both;
+}
+
+.hero__title {
+  background: linear-gradient(
+    135deg,
+    #0f172a 15%,
+    #2563eb 55%,
+    #7c3aed 100%
+  );
+
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+
+  letter-spacing: -0.035em;
+}
+
+.hero__subtitle {
+  max-width: 760px;
+  line-height: 1.7;
+}
+
+
+/* =========================================================
+   Workflow
+   ========================================================= */
+
+.workflow-steps {
+  margin-top: 28px;
+  margin-bottom: 36px;
+  padding: 20px 24px;
+
+  border: 1px solid rgba(99, 102, 241, 0.1);
+  border-radius: 18px;
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(248, 250, 252, 0.92),
+      rgba(238, 242, 255, 0.65)
+    );
+
+  box-shadow: 0 8px 30px rgba(15, 23, 42, 0.04);
+
+  animation: dashboardSlideUp 0.5s ease both;
+}
+
+.workflow-step__dot {
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease,
+    background 0.25s ease;
+}
+
+.workflow-step--current .workflow-step__dot {
+  transform: scale(1.12);
+
+  box-shadow:
+    0 0 0 6px rgba(37, 99, 235, 0.1),
+    0 5px 15px rgba(37, 99, 235, 0.2);
+}
+
+.workflow-step--done .workflow-step__dot {
+  box-shadow:
+    0 0 0 5px rgba(34, 197, 94, 0.08);
+}
+
+
+/* =========================================================
+   Main Result Sections
+   ========================================================= */
+
+.section-block {
+  animation: dashboardSlideUp 0.55s ease both;
+}
+
+
+/* Give major cards a premium hover effect */
+
+.health-overview,
+.investigation-results,
+.validation-results,
+.engineering-summary {
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease,
+    border-color 0.25s ease;
+}
+
+
+/* =========================================================
+   Findings
+   ========================================================= */
+
+.findings-list {
+  animation: dashboardFadeIn 0.55s ease both;
+}
+
+.finding-card {
+  position: relative;
+  overflow: hidden;
+
+  transition:
+    transform 0.22s ease,
+    box-shadow 0.22s ease,
+    border-color 0.22s ease;
+}
+
+.finding-card:hover {
+  transform: translateY(-3px);
+
+  box-shadow:
+    0 14px 35px rgba(15, 23, 42, 0.08);
+}
+
+.finding-card::after {
+  content: "";
+
+  position: absolute;
+  inset: 0;
+
+  pointer-events: none;
+
+  background: linear-gradient(
+    115deg,
+    transparent 35%,
+    rgba(255, 255, 255, 0.35) 50%,
+    transparent 65%
+  );
+
+  transform: translateX(-120%);
+
+  transition: transform 0.7s ease;
+}
+
+.finding-card:hover::after {
+  transform: translateX(120%);
+}
+
+
+/* =========================================================
+   Buttons
+   ========================================================= */
+
+.btn {
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease,
+    background 0.18s ease,
+    border-color 0.18s ease;
+}
+
+.btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+}
+
+.btn:active:not(:disabled) {
+  transform: translateY(0) scale(0.98);
+}
+
+.btn--primary {
+  border: none;
+
+  background: linear-gradient(
+    135deg,
+    #2563eb,
+    #4f46e5,
+    #7c3aed
+  );
+
+  background-size: 180% 180%;
+
+  box-shadow:
+    0 8px 22px rgba(79, 70, 229, 0.22);
+
+  animation: premiumButtonGradient 5s ease infinite;
+}
+
+.btn--primary:hover:not(:disabled) {
+  box-shadow:
+    0 12px 30px rgba(79, 70, 229, 0.3);
+}
+
+
+/* =========================================================
+   Issue Input
+   ========================================================= */
+
+.issue-input {
+  animation: dashboardSlideUp 0.45s ease both;
+}
+
+.issue-input textarea {
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
+}
+
+.issue-input textarea:focus {
+  border-color: #6366f1;
+
+  box-shadow:
+    0 0 0 4px rgba(99, 102, 241, 0.1),
+    0 8px 24px rgba(99, 102, 241, 0.06);
+
+  transform: translateY(-1px);
+}
+
+
+/* =========================================================
+   Investigation Results
+   ========================================================= */
+
+.investigation-results {
+  animation: dashboardSlideUp 0.5s ease both;
+}
+
+.investigation-results > * {
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.investigation-results > *:hover {
+  transform: translateY(-2px);
+}
+
+
+/* =========================================================
+   Validation
+   ========================================================= */
+
+.validation-results {
+  animation: dashboardSlideUp 0.5s ease both;
+}
+
+.validation-results [class*="stat"],
+.validation-results [class*="metric"] {
+  transition:
+    transform 0.22s ease,
+    box-shadow 0.22s ease;
+}
+
+.validation-results [class*="stat"]:hover,
+.validation-results [class*="metric"]:hover {
+  transform: translateY(-3px);
+
+  box-shadow:
+    0 12px 30px rgba(15, 23, 42, 0.07);
+}
+
+
+/* =========================================================
+   Engineering Summary
+   ========================================================= */
+
+.engineering-summary {
+  animation: dashboardSlideUp 0.55s ease both;
+}
+
+.engineering-summary > * {
+  transition:
+    transform 0.22s ease,
+    box-shadow 0.22s ease;
+}
+
+.engineering-summary > *:hover {
+  transform: translateY(-2px);
+}
+
+
+/* =========================================================
+   Error banners
+   ========================================================= */
+
+.error-banner,
+.inv-error-banner,
+.val-error-banner {
+  animation: errorEnter 0.35s ease both;
+}
+
+
+/* =========================================================
+   Loading Spinner
+   ========================================================= */
+
+.spinner {
+  filter: drop-shadow(0 0 6px rgba(37, 99, 235, 0.25));
+}
+
+
+/* =========================================================
+   Global selection
+   ========================================================= */
+
+::selection {
+  background: rgba(99, 102, 241, 0.18);
+  color: #0f172a;
+}
+
+
+/* =========================================================
+   Animations
+   ========================================================= */
+
+@keyframes dashboardFadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes dashboardSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes errorEnter {
+  from {
+    opacity: 0;
+    transform: translateX(-8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes premiumButtonGradient {
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+
+/* Accessibility */
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .hero,
+  .workflow-steps,
+  .section-block,
+  .findings-list,
+  .issue-input,
+  .investigation-results,
+  .validation-results,
+  .engineering-summary,
+  .error-banner,
+  .inv-error-banner,
+  .val-error-banner,
+  .btn--primary {
+    animation: none;
+  }
+}
+/* ─────────────────────────────────────────────
+   RepoMedic — soft blue application background
+   ───────────────────────────────────────────── */
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  background:
+    radial-gradient(
+      circle at 15% 10%,
+      rgba(96, 165, 250, 0.10),
+      transparent 32%
+    ),
+    radial-gradient(
+      circle at 85% 20%,
+      rgba(129, 140, 248, 0.08),
+      transparent 30%
+    ),
+    linear-gradient(
+      135deg,
+      #f8fbff 0%,
+      #f1f7ff 45%,
+      #edf5ff 100%
+    );
+  background-attachment: fixed;
+}
+.header__logo--button {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  transition:
+    transform 0.2s ease,
+    opacity 0.2s ease;
+}
+
+.header__logo--button:hover {
+  transform: translateY(-1px);
+  opacity: 0.78;
+}
+
+.header__logo--button:active {
+  transform: translateY(0) scale(0.98);
+}
+
+.header__logo--button:focus-visible {
+  outline: 2px solid #60a5fa;
+  outline-offset: 5px;
+  border-radius: 4px;
+}
+.header__logo--button {
+  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 1.65rem;
+  font-weight: 900;
+  letter-spacing: -0.06em;
+  line-height: 1;
 }

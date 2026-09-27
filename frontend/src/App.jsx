@@ -1,19 +1,24 @@
 import React, { useState, useEffect } from 'react';
-import { analyzeRepo, investigateIssue, validateRepo } from './services/api.js';
+
+import {
+  analyzeRepo,
+  analyzeLocalRepo,
+  analyzeGitHubRepo,
+  investigateIssue,
+  validateRepo,
+} from './services/api.js';
+
 import HealthOverview from './components/HealthOverview.jsx';
 import FindingsList from './components/FindingsList.jsx';
 import IssueInput from './components/IssueInput.jsx';
 import InvestigationResults from './components/InvestigationResults.jsx';
 import ValidationResults from './components/ValidationResults.jsx';
 import EngineeringSummary from './components/EngineeringSummary.jsx';
-
-/* ── Helpers ─────────────────────────────────────────────── */
-
+import RepositoryInput from './components/RepositoryInput.jsx';
+/* ── Workflow step indicator ─────────────────────────────── */
 function buildIssueText(finding) {
   return `${finding.title}\n\n${finding.description}`;
 }
-
-/* ── Workflow step indicator ─────────────────────────────── */
 
 const STEPS = ['Analyse', 'Investigate', 'Validate', 'Summary'];
 
@@ -57,11 +62,19 @@ function WorkflowSteps({ status }) {
 
 /* ── Stateless UI pieces ─────────────────────────────────── */
 
-function Header() {
+function Header({ onHome }) {
   return (
     <header className="header">
       <div className="header__inner">
-        <span className="header__logo">RepoMedic</span>
+        <button
+          type="button"
+          className="header__logo header__logo--button"
+          onClick={onHome}
+          aria-label="Return to RepoMedic home"
+        >
+          RepoMedic
+        </button>
+
         <span className="header__tag">IBM Bob 2.0 Hackathon</span>
       </div>
     </header>
@@ -113,13 +126,24 @@ export default function App() {
   }, [selectedFinding]);
 
   /* ── Analyse ── */
+    /* ── Analyse Demo Repository ── */
+
   async function handleAnalyze() {
     setStatus('ANALYZING');
-    setError(null); setErrorContext(null);
-    setAnalyzeData(null); setInvestigateData(null); setValidateData(null);
-    setSelectedFinding(null); setIssueText('');
+
+    setError(null);
+    setErrorContext(null);
+
+    setAnalyzeData(null);
+    setInvestigateData(null);
+    setValidateData(null);
+
+    setSelectedFinding(null);
+    setIssueText('');
+
     try {
       const data = await analyzeRepo();
+
       setAnalyzeData(data);
       setStatus('ANALYZED');
     } catch (err) {
@@ -129,6 +153,60 @@ export default function App() {
     }
   }
 
+
+  /* ── Analyse Local Repository ── */
+
+  async function handleAnalyzeLocal(repository) {
+    setStatus('ANALYZING');
+
+    setError(null);
+    setErrorContext(null);
+
+    setAnalyzeData(null);
+    setInvestigateData(null);
+    setValidateData(null);
+
+    setSelectedFinding(null);
+    setIssueText('');
+
+    try {
+      const data = await analyzeLocalRepo(repository);
+
+      setAnalyzeData(data);
+      setStatus('ANALYZED');
+    } catch (err) {
+      setError(err.message);
+      setErrorContext('analyze');
+      setStatus('ERROR');
+    }
+  }
+
+    /* ── Analyse GitHub Repository ── */
+
+  async function handleAnalyzeGitHub(repository) {
+    setStatus('ANALYZING');
+
+    setError(null);
+    setErrorContext(null);
+
+    setAnalyzeData(null);
+    setInvestigateData(null);
+    setValidateData(null);
+
+    setSelectedFinding(null);
+    setIssueText('');
+
+    try {
+      const data = await analyzeGitHubRepo(repository);
+
+      setAnalyzeData(data);
+      setStatus('ANALYZED');
+    } catch (err) {
+      setError(err.message);
+      setErrorContext('analyze');
+      setStatus('ERROR');
+    }
+  }
   /* ── Investigate ── */
   async function handleInvestigate() {
     const trimmed = issueText.trim();
@@ -211,36 +289,56 @@ export default function App() {
 
   return (
     <>
-      <Header />
+      <Header onHome={handleReset} />
       <main className="page">
 
-        {/* ── Hero ── */}
+                {/* ── Hero ── */}
         <div className="hero">
-          <h1 className="hero__title">Repository Diagnosis &amp; Debugging</h1>
+          <h1 className="hero__title">
+            Repository Diagnosis &amp; Debugging
+          </h1>
+
           <p className="hero__subtitle">
-            Analyse a repository, identify engineering findings, investigate bugs,
-            and validate repairs — powered by IBM Bob.
+            Analyze a real repository, identify engineering findings,
+            investigate bugs, and validate repairs — powered by IBM Bob.
           </p>
+        </div>
+
+        {/* ── Repository selection ── */}
+        {!showDashboard && !isAnalyzing && (
+          <RepositoryInput
+  onAnalyzeLocal={handleAnalyzeLocal}
+  onAnalyzeGitHub={handleAnalyzeGitHub}
+  onAnalyzeDemo={handleAnalyze}
+  loading={isAnalyzing}
+/>
+        )}
+
+        {/* ── Active repository actions ── */}
+        {showDashboard && (
           <div className="hero__actions">
             <button
-              className="btn btn--primary"
-              onClick={handleAnalyze}
+              className="btn btn--ghost"
+              onClick={handleReset}
               disabled={isBusy}
-              aria-busy={isAnalyzing}
             >
-              {isAnalyzing ? 'Analysing…' : 'Analyse Repository'}
+              Analyze Another Repository
             </button>
-            {(showDashboard || status === 'ERROR') && (
-              <button
-                className="btn btn--ghost"
-                onClick={handleReset}
-                disabled={isBusy}
-              >
-                Reset
-              </button>
-            )}
           </div>
-        </div>
+        )}
+
+        {/* ── Analyze error reset ── */}
+        {status === 'ERROR' && (
+          <div className="hero__actions">
+            <button
+              className="btn btn--ghost"
+              onClick={handleReset}
+              disabled={isBusy}
+            >
+              Choose Another Repository
+            </button>
+          </div>
+        )}
 
         {/* ── Workflow progress steps ── */}
         {(showDashboard || status === 'ERROR') && (
