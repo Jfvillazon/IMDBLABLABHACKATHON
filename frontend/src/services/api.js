@@ -1,4 +1,5 @@
-const ROOT = '/api/repositories';
+const API_BASE = (import.meta.env?.VITE_API_URL || '').replace(/\/$/, '');
+const ROOT = `${API_BASE}/api/repositories`;
 export function errorMessage(status, data) {
   const detail = typeof data?.detail === 'string' ? data.detail : Array.isArray(data?.detail) ? data.detail.map(item => item.msg).join('; ') : 'Repository request failed.';
   const hints = {

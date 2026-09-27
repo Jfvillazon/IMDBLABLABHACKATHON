@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 import asyncio
 from contextlib import asynccontextmanager
 
@@ -31,6 +32,15 @@ async def lifespan(application):
             registry.close()
 
 app = FastAPI(title="RepoMedic", lifespan=lifespan)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["https://repomedic-8fyi.onrender.com"],
+    allow_credentials=False,
+    allow_methods=["GET", "POST", "DELETE", "OPTIONS"],
+    allow_headers=["Content-Type"],
+)
+
 app.add_middleware(RepositoryBodyLimit)
 
 app.include_router(analyze_router)
