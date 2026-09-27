@@ -225,7 +225,7 @@ def test_analyze_route_works_through_main_app(
     response2 = client.post("/api/analyze", json={"path": "/etc"})
     assert response2.status_code == 200
     assert response2.json()["repository"] == tmp_path.name
-        
+
     def count_analyze_routes(routes):
         count = 0
         for route in routes:
